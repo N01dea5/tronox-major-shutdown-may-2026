@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SRG Global — CSBP NAAN2 Shutdown Workforce Dashboard</title>
+  <link rel="icon" href="./srg_logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.1.16/Recharts.js"></script>
+
+  <script>
+    window.addEventListener("error", function (e) {
+      var root = document.getElementById("root");
+      if (!root) return;
+      root.innerHTML =
+        '<div style="padding:40px;font-family:monospace;background:#FEE;color:#900;border:2px solid #C00;margin:20px;border-radius:8px;">' +
+        "<h2>Script Error</h2>" +
+        "<p><strong>Message:</strong> " + (e.message || "Unknown") + "</p>" +
+        "<p><strong>Source:</strong> " + (e.filename || "inline") + "</p>" +
+        "<p><strong>Line:</strong> " + (e.lineno || "?") + "</p>" +
+        "<p>Loaded: React=" + typeof React +
+        ", ReactDOM=" + typeof ReactDOM +
+        ", Recharts=" + typeof Recharts +
+        "</p></div>";
+    });
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: #F5F5F5;
+      color: #1A1A1A;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::-webkit-scrollbar { height: 8px; width: 8px; }
+    ::-webkit-scrollbar-thumb { background: #B0B0B0; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #888; }
+    ::-webkit-scrollbar-track { background: #E8E8E8; }
+    button { font-family: inherit; }
+    select { font-family: inherit; }
+    table { font-family: inherit; }
+
+    @media print {
+      body {
+        background: white !important;
+      }
+      button {
+        display: none !important;
+      }
+      #root {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    const { useState, useMemo } = React;
+    const {
+      BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+      PieChart, Pie, Cell, ResponsiveContainer, Legend
+    } = Recharts;
+
+    const SRG_RED = "#E30613";
+    const SRG_DARK = "#1A1A1A";
+    const SRG_GREY = "#595959";
+    const SRG_LIGHT = "#F5F5F5";
+    const SRG_BORDER = "#E5E5E5";
+    const RH = "#DC2626";
+    const RM = "#F59E0B";
+    const RL = "#16A34A";
+
+
+    const CONTINGENCY = {
+      total: 0,
+      byGroup: {
+        "Supervisor": 0,
+        "Fitter": 0,
+        "Rigger": 0,
+        "Truck and Driver": 0,
+        "Trade Assistant": 0
+      }
+    };
+
+    const E = [
+      {id:1,name:"TBC",role:"Supervisor",shift:"Day",days:24,group:"Supervisor",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift supervisor — pre-shut coordination, shutdown oversight and post-shut handback. Position to be confirmed."},
+      {id:2,name:"TBC",role:"Supervisor",shift:"Day",days:24,group:"Supervisor",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift supervisor — pre-shut coordination, shutdown oversight and post-shut handback. Position to be confirmed."},
+      {id:3,name:"TBC",role:"Supervisor",shift:"Night",days:19,group:"Supervisor",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift supervisor — pre-shut day support then transitions to nightshift for shutdown and post-shut. Position to be confirmed."},
+      {id:4,name:"TBC",role:"Fitter",shift:"Day",days:18,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — pre-shut mobilisation through shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
+      {id:5,name:"TBC",role:"Fitter",shift:"Day",days:18,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — pre-shut mobilisation through shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
+      {id:6,name:"TBC",role:"Fitter",shift:"Day",days:15,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — pre-shut mobilisation through shutdown. CSE, WAH required. Position to be confirmed."},
+      {id:7,name:"TBC",role:"Fitter",shift:"Day",days:13,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — shutdown ramp-up from 6-Jun. CSE, WAH required. Position to be confirmed."},
+      {id:8,name:"TBC",role:"Fitter",shift:"Day",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:9,name:"TBC",role:"Fitter",shift:"Day",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:10,name:"TBC",role:"Fitter",shift:"Day",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:11,name:"TBC",role:"Fitter",shift:"Night",days:16,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
+      {id:12,name:"TBC",role:"Fitter",shift:"Night",days:16,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
+      {id:13,name:"TBC",role:"Fitter",shift:"Night",days:12,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — shutdown ramp-up from 7-Jun. CSE, WAH required. Position to be confirmed."},
+      {id:14,name:"TBC",role:"Fitter",shift:"Night",days:12,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — shutdown ramp-up from 7-Jun. CSE, WAH required. Position to be confirmed."},
+      {id:15,name:"TBC",role:"Fitter",shift:"Night",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:16,name:"TBC",role:"Fitter",shift:"Night",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:17,name:"TBC",role:"Rigger",shift:"Day",days:18,group:"Rigger",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift rigger — pre-shut through post-shut. CSE, WAH required. Position to be confirmed."},
+      {id:18,name:"TBC",role:"Rigger",shift:"Day",days:13,group:"Rigger",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift rigger — shutdown phase. CSE, WAH required. Position to be confirmed."},
+      {id:19,name:"TBC",role:"Rigger",shift:"Night",days:16,group:"Rigger",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift rigger — shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
+      {id:20,name:"TBC",role:"Rigger",shift:"Night",days:11,group:"Rigger",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift rigger — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:21,name:"TBC",role:"Truck and Driver",shift:"Day",days:1,group:"Truck and Driver",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Truck and driver — pre-shut mobilisation support 5-Jun only. Position to be confirmed."},
+      {id:22,name:"TBC",role:"Trade Assistant",shift:"Day",days:15,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — pre-shut through shutdown. CSE, WAH required. Position to be confirmed."},
+      {id:23,name:"TBC",role:"Trade Assistant",shift:"Day",days:14,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — pre-shut through shutdown. CSE, WAH required. Position to be confirmed."},
+      {id:24,name:"TBC",role:"Trade Assistant",shift:"Day",days:13,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — shutdown 6\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:25,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:26,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:27,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:28,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:29,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:30,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:31,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:32,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:33,name:"TBC",role:"Trade Assistant",shift:"Night",days:13,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — shutdown 6\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:34,name:"TBC",role:"Trade Assistant",shift:"Night",days:13,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — shutdown 6\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:35,name:"TBC",role:"Trade Assistant",shift:"Night",days:12,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — shutdown ramp-up from 7-Jun. CSE, WAH required. Position to be confirmed."},
+      {id:36,name:"TBC",role:"Trade Assistant",shift:"Night",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
+      {id:37,name:"TBC",role:"Trade Assistant",shift:"Night",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."}
+    ];
+
+    const DATES = ["25 May","26 May","27 May","28 May","29 May","30 May","31 May","01 Jun","02 Jun","03 Jun","04 Jun","05 Jun","06 Jun","07 Jun","08 Jun","09 Jun","10 Jun","11 Jun","12 Jun","13 Jun","14 Jun","15 Jun","16 Jun","17 Jun","18 Jun","19 Jun","20 Jun","21 Jun"];
+    const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+    const ROSTER = [
+      {name:"TBC",role:"Supervisor (Day 1)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["DS","DS","DS","DS","DS","","","DS","DS","DS","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
+      {name:"TBC",role:"Supervisor (Day 2)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["DS","DS","DS","DS","DS","","","DS","DS","DS","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
+      {name:"TBC",role:"Supervisor (Night)",notes:"Pre-Shut DS then Shutdown NS",codes:["","","","","","","","DS","DS","DS","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS"]},
+      {name:"TBC",role:"Fitter (Day 1)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
+      {name:"TBC",role:"Fitter (Day 2)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
+      {name:"TBC",role:"Fitter (Day 3)",notes:"Pre-Shut + Shutdown",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Fitter (Day 4)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Fitter (Day 5)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Fitter (Day 6)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Fitter (Day 7)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Fitter (Night 1)",notes:"Shutdown + Post-Shut",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS"]},
+      {name:"TBC",role:"Fitter (Night 2)",notes:"Shutdown + Post-Shut",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS"]},
+      {name:"TBC",role:"Fitter (Night 3)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
+      {name:"TBC",role:"Fitter (Night 4)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
+      {name:"TBC",role:"Fitter (Night 5)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
+      {name:"TBC",role:"Fitter (Night 6)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
+      {name:"TBC",role:"Rigger (Day 1)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
+      {name:"TBC",role:"Rigger (Day 2)",notes:"Shutdown",codes:["","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Rigger (Night 1)",notes:"Shutdown + Post-Shut",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS"]},
+      {name:"TBC",role:"Rigger (Night 2)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
+      {name:"TBC",role:"Truck and Driver",notes:"Pre-Shut Only",codes:["","","","","","","","","","","","DS","","","","","","","","","","","","","","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 1)",notes:"Pre-Shut + Shutdown",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 2)",notes:"Pre-Shut + Shutdown",codes:["","","","","","","","","","","DS","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 3)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 4)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 5)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 6)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 7)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 8)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 9)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 10)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Day 11)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Night 1)",notes:"Shutdown",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Night 2)",notes:"Shutdown",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Night 3)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Night 4)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
+      {name:"TBC",role:"Trade Assistant (Night 5)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]}
+    ];
+
+    const TC = [
+      { key: "cse", label: "CSE" },
+      { key: "wah", label: "WAH" },
+      { key: "ewp", label: "EWP" },
+      { key: "ba", label: "BA" },
+      { key: "fork", label: "Fork" },
+      { key: "hr", label: "HR" },
+      { key: "dog", label: "Dog" },
+      { key: "rig", label: "Rig" },
+      { key: "gta", label: "GTA" },
+      { key: "fa", label: "FA" }
+    ];
+
+    const GROUP_ORDER = ["Supervisor","Fitter","Rigger","Truck and Driver","Trade Assistant"];
+    function App() {
+      const [tab, setTab] = useState("profile");
+      const [fG, sfG] = useState("All");
+      const [fS, sfS] = useState("All");
+      const [fT, sfT] = useState([]);
+      const [rShift, setRShift] = useState("All");
+      const [rRole, setRRole] = useState("All");
+
+      const toggle = k => sfT(p => p.includes(k) ? p.filter(x => x !== k) : [...p, k]);
+
+      const filtered = useMemo(() => E.filter(e => {
+        if (fG !== "All" && e.group !== fG) return false;
+        if (fS !== "All" && e.shift !== fS) return false;
+        if (fT.length > 0) {
+          for (const t of fT) {
+            if (t === "rig") {
+              if (!e.rig) return false;
+            } else {
+              if (!e[t]) return false;
+            }
+          }
+        }
+        return true;
+      }), [fG, fS, fT]);
+
+      const groups = [...new Set(E.map(e => e.group))];
+      const tN = E.filter(e => !e.name.startsWith("TBC")).length;
+      const tT = E.filter(e => e.name.startsWith("TBC")).length;
+      const aT = (E.filter(e => e.ty > 0).reduce((s, e) => s + e.ty, 0) / (E.filter(e => e.ty > 0).length || 1)).toFixed(1);
+      const aS = (E.filter(e => e.sy > 0).reduce((s, e) => s + e.sy, 0) / (E.filter(e => e.sy > 0).length || 1)).toFixed(1);
+
+      const tc = {};
+      TC.forEach(t => {
+        tc[t.label] = E.filter(e => t.key === "rig" ? !!e[t.key] : e[t.key]).length;
+      });
+
+      const rgd = GROUP_ORDER.filter(g => E.some(e => e.group === g) || (CONTINGENCY.byGroup[g] || 0) > 0).map(g => ({
+        name: g,
+        filled: E.filter(e => e.group === g && !e.name.startsWith("TBC")).length,
+        tbc: E.filter(e => e.group === g && e.name.startsWith("TBC")).length,
+        contingency: CONTINGENCY.byGroup[g] || 0
+      }));
+
+      const sd = [
+        { name: "Day Shift", value: E.filter(e => e.shift === "Day").length },
+        { name: "Night Shift", value: E.filter(e => e.shift === "Night").length }
+      ];
+
+      const tradeSummary = useMemo(() => {
+        return GROUP_ORDER.filter(g => E.some(e => e.group === g) || (CONTINGENCY.byGroup[g] || 0) > 0).map(g => {
+          const planned = E.filter(e => e.group === g).length;
+          const confirmed = E.filter(e => e.group === g && !e.name.startsWith("TBC")).length;
+          const gap = E.filter(e => e.group === g && e.name.startsWith("TBC")).length;
+          const contingency = CONTINGENCY.byGroup[g] || 0;
+
+          let readiness = "Covered";
+          let readinessColor = RM;
+
+          if (gap > 0) {
+            readiness = "Gap";
+            readinessColor = RH;
+          } else if (contingency > 0) {
+            readiness = "Ready";
+            readinessColor = RL;
+          }
+
+          return { group: g, planned, confirmed, gap, contingency, readiness, readinessColor };
+        });
+      }, []);
+
+      const risks = useMemo(() => {
+        const r = [];
+        groups.forEach(g => {
+          ["Day", "Night"].forEach(s => {
+            const crew = E.filter(e => e.group === g && e.shift === s);
+            if (!crew.length) return;
+
+            const named = crew.filter(e => !e.name.startsWith("TBC"));
+            const tbc = crew.filter(e => e.name.startsWith("TBC"));
+
+            if (tbc.length) {
+              r.push({ group: g, shift: s, level: "HIGH", issue: `${tbc.length} unfilled position(s)`, action: "Source and confirm personnel before shutdown mobilisation." });
+            }
+
+            named.forEach(e => {
+              if (e.sy < 1 && e.ty > 0) {
+                r.push({ group: g, shift: s, level: "MED", issue: `${e.name} — limited shutdown experience`, action: "Pair with experienced worker for initial shifts. Do not assign to isolated or critical path tasks without direct oversight." });
+              }
+            });
+
+            if (["Fitter", "Trade Assistant", "Roller Crew"].includes(g) && !named.some(e => e.tele) && named.length > 0) {
+              r.push({ group: g, shift: s, level: "LOW", issue: "No telehandler ticket holder in group", action: "Confirm telehandler access from adjacent crew or source ticket holder." });
+            }
+
+            if (!named.some(e => e.gta) && named.length > 2 && ["Fitter", "Boilermaker"].includes(g)) {
+              r.push({ group: g, shift: s, level: "LOW", issue: "No gas testing ticket holder in group", action: "Confirm GTA coverage from HSE or adjacent crew for confined space/hot work entries." });
+            }
+
+            named.forEach(e => {
+              if (/resume.*(to be provided|pending)/i.test(e.sum)) {
+                r.push({ group: g, shift: s, level: "MED", issue: `${e.name} — resume not yet received`, action: "Obtain and review resume before mobilisation to verify competency." });
+              }
+            });
+          });
+        });
+
+        return r.sort((a, b) => ({ HIGH: 0, MED: 1, LOW: 2 })[a.level] - ({ HIGH: 0, MED: 1, LOW: 2 })[b.level]);
+      }, []);
+
+      const criticalRoles = useMemo(() => {
+        const wanted = [
+          "Supervisor"
+        ];
+
+        return wanted.map(role => {
+          const matching = E.filter(e => e.role === role);
+          return {
+            role,
+            planned: matching.length,
+            confirmed: matching.filter(e => !e.name.startsWith("TBC")).length,
+            gap: matching.filter(e => e.name.startsWith("TBC")).length
+          };
+        }).filter(x => x.planned > 0);
+      }, []);
+
+      const printRisks = useMemo(() => risks.slice(0, 8), [risks]);
+
+      const ranked = useMemo(() => {
+        const r = {};
+        groups.forEach(g => {
+          r[g] = E.filter(e => e.group === g && !e.name.startsWith("TBC"))
+            .sort((a, b) => (b.ty + b.sy * 2) - (a.ty + a.sy * 2));
+        });
+        return r;
+      }, []);
+
+      const rosterRoles = [...new Set(ROSTER.map(r => r.role))].sort();
+
+      const filteredRoster = useMemo(() => {
+        return ROSTER.filter(r => {
+          if (rShift === "Day" && !r.codes.includes("DS")) return false;
+          if (rShift === "Night" && !r.codes.includes("NS")) return false;
+          if (rRole !== "All" && r.role !== rRole) return false;
+          return true;
+        });
+      }, [rShift, rRole]);
+
+      const SC = ({ label, value, sub }) =>
+        React.createElement("div", {
+          style: {
+            background: "white",
+            borderLeft: `3px solid ${SRG_RED}`,
+            padding: "18px 22px",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.04)"
+          }
+        },
+          React.createElement("div", { style: { fontSize: 30, fontWeight: 800, color: SRG_DARK, lineHeight: 1.1 } }, value),
+          React.createElement("div", { style: { fontSize: 12, fontWeight: 600, color: SRG_GREY, marginTop: 4, textTransform: "uppercase", letterSpacing: 0.5 } }, label),
+          sub && React.createElement("div", { style: { fontSize: 11, color: "#8C8C8C", marginTop: 3 } }, sub)
+        );
+
+      const RB = ({ level }) =>
+        React.createElement("span", {
+          style: {
+            display: "inline-block",
+            padding: "3px 10px",
+            fontSize: 10,
+            fontWeight: 700,
+            color: "white",
+            background: level === "HIGH" ? RH : level === "MED" ? RM : RL,
+            letterSpacing: 0.5
+          }
+        }, level);
+
+      const ReadinessPill = ({ text, color }) =>
+        React.createElement("span", {
+          style: {
+            display: "inline-block",
+            padding: "3px 10px",
+            fontSize: 10,
+            fontWeight: 700,
+            color: "white",
+            background: color,
+            letterSpacing: 0.4,
+            textTransform: "uppercase"
+          }
+        }, text);
+
+      const TabBtn = ({ id, label }) =>
+        React.createElement("button", {
+          onClick: () => setTab(id),
+          style: {
+            padding: "12px 24px",
+            border: "none",
+            borderBottom: tab === id ? `3px solid ${SRG_RED}` : "3px solid transparent",
+            background: "transparent",
+            cursor: "pointer",
+            fontWeight: tab === id ? 700 : 600,
+            fontSize: 13,
+            color: tab === id ? SRG_DARK : SRG_GREY,
+            textTransform: "uppercase",
+            letterSpacing: 0.8,
+            transition: "all .15s"
+          }
+        }, label);
+
+      return React.createElement("div", {
+        style: {
+          fontFamily: "'Source Sans 3','Segoe UI',system-ui,sans-serif",
+          background: SRG_LIGHT,
+          minHeight: "100vh",
+          color: SRG_DARK
+        }
+      },
+        React.createElement("div", {
+          style: {
+            background: "white",
+            borderBottom: `1px solid ${SRG_BORDER}`,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
+          }
+        },
+          React.createElement("div", {
+            style: {
+              maxWidth: 1440,
+              margin: "0 auto",
+              padding: "20px 32px",
+              display: "flex",
+              alignItems: "center",
+              gap: 24,
+              flexWrap: "wrap"
+            }
+          },
+            React.createElement("img", {
+              src: "./srg_logo.png",
+              alt: "SRG Global",
+              style: { height: 44, width: "auto", flexShrink: 0 }
+            }),
+            React.createElement("div", { style: { width: 1, height: 40, background: SRG_BORDER, flexShrink: 0 } }),
+            React.createElement("div", { style: { flex: 1, minWidth: 280 } },
+              React.createElement("div", {
+                style: {
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: SRG_RED,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase"
+                }
+              }, "Asset Maintenance · Integrated Services"),
+              React.createElement("div", {
+                style: { fontSize: 22, fontWeight: 800, color: SRG_DARK, marginTop: 2, lineHeight: 1.2 }
+              }, "CSBP NAAN2 — Shutdown Workforce Dashboard"),
+              React.createElement("div", {
+                style: { fontSize: 12, color: SRG_GREY, marginTop: 2 }
+              }, `Kwinana · NAAN2 Shutdown 2026 · ${E.length} Positions`)
+            )
+          ),
+          React.createElement("div", {
+            style: {
+              maxWidth: 1440,
+              margin: "0 auto",
+              padding: "0 32px",
+              display: "flex",
+              gap: 4,
+              borderTop: `1px solid ${SRG_BORDER}`
+            }
+          },
+            React.createElement(TabBtn, { id: "profile", label: "Workforce Profile" }),
+            React.createElement(TabBtn, { id: "risk", label: "Risk Assessment" }),
+            React.createElement(TabBtn, { id: "roster", label: "Shutdown Roster" }),
+            React.createElement(TabBtn, { id: "print", label: "Print Summary" })
+          )
+        ),
+
+        React.createElement("div", { style: { maxWidth: 1440, margin: "0 auto", padding: "24px 32px" } },
+
+          tab === "profile" && React.createElement(React.Fragment, null,
+
+            React.createElement("div", {
+              style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 24 }
+            },
+              React.createElement(SC, { label: "Planned Workforce", value: E.length, sub: "Core planned positions" }),
+              React.createElement(SC, { label: "Confirmed Workforce", value: tN, sub: "Named personnel only" }),
+              React.createElement(SC, { label: "Open Positions", value: tT, sub: "Still to be confirmed" }),
+              React.createElement(SC, { label: "Contingency Depth", value: CONTINGENCY.total, sub: "Separate backup workforce" }),
+              React.createElement(SC, { label: "Avg Trade Experience", value: `${aT} yrs`, sub: "Named personnel only" }),
+              React.createElement(SC, { label: "Avg Shutdown Experience", value: `${aS} yrs`, sub: "Named personnel only" })
+            ),
+
+            React.createElement("div", {
+              style: { marginTop: -8, marginBottom: 24, fontSize: 11, color: SRG_GREY, fontStyle: "italic" }
+            }, "CSBP NAAN2 Shutdown \u2014 Kwinana. Three phases: Pre-Shut (25 May\u20135 Jun), Shutdown (6\u201318 Jun), Post-Shut (19\u201321 Jun). Peak: 22 day / 14 night. Requirements: CSE for Fitters/TAs/Riggers, WAH for all trades, 50% BA for Fitters/TAs, 50% Rigging for Fitters."),
+
+            React.createElement("div", {
+              style: { background: "white", boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}`, overflow: "auto", marginBottom: 24 }
+            },
+              React.createElement("div", {
+                style: { padding: "18px 24px", borderBottom: `2px solid ${SRG_RED}`, fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: 1, color: SRG_DARK }
+              }, "By-Trade Workforce Summary"),
+              React.createElement("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 12 } },
+                React.createElement("thead", null,
+                  React.createElement("tr", { style: { background: "#FAFAFA", borderBottom: `1px solid ${SRG_BORDER}` } },
+                    React.createElement("th", { style: { padding: "12px", textAlign: "left", fontWeight: 700, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Trade Group"),
+                    React.createElement("th", { style: { padding: "12px 8px", textAlign: "center", fontWeight: 700, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Planned"),
+                    React.createElement("th", { style: { padding: "12px 8px", textAlign: "center", fontWeight: 700, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Confirmed"),
+                    React.createElement("th", { style: { padding: "12px 8px", textAlign: "center", fontWeight: 700, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Gap"),
+                    React.createElement("th", { style: { padding: "12px 8px", textAlign: "center", fontWeight: 700, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Contingency"),
+                    React.createElement("th", { style: { padding: "12px", textAlign: "left", fontWeight: 700, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Readiness")
+                  )
+                ),
+                React.createElement("tbody", null,
+                  tradeSummary.map((r, i) =>
+                    React.createElement("tr", {
+                      key: r.group,
+                      style: { borderBottom: `1px solid ${SRG_BORDER}`, background: i % 2 === 0 ? "white" : "#FAFAFA" }
+                    },
+                      React.createElement("td", { style: { padding: "10px 12px", fontWeight: 700, color: SRG_DARK } }, r.group),
+                      React.createElement("td", { style: { padding: "10px 8px", textAlign: "center", fontWeight: 700 } }, r.planned),
+                      React.createElement("td", { style: { padding: "10px 8px", textAlign: "center", fontWeight: 700 } }, r.confirmed),
+                      React.createElement("td", { style: { padding: "10px 8px", textAlign: "center", fontWeight: 700, color: r.gap > 0 ? RH : SRG_DARK } }, r.gap),
+                      React.createElement("td", { style: { padding: "10px 8px", textAlign: "center", fontWeight: 700, color: r.contingency > 0 ? SRG_DARK : "#B0B0B0" } }, r.contingency || "–"),
+                      React.createElement("td", { style: { padding: "10px 12px" } }, React.createElement(ReadinessPill, { text: r.readiness, color: r.readinessColor }))
+                    )
+                  )
+                )
+              )
+            ),
+
+            React.createElement("div", {
+              style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }
+            },
+              React.createElement("div", {
+                style: { background: "white", padding: 24, boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}` }
+              },
+                React.createElement("div", {
+                  style: { fontSize: 11, fontWeight: 700, marginBottom: 16, color: SRG_GREY, textTransform: "uppercase", letterSpacing: 1 }
+                }, "Manning by Trade Group"),
+                React.createElement(ResponsiveContainer, { width: "100%", height: 260 },
+                  React.createElement(BarChart, { data: rgd, margin: { top: 5, right: 5, left: -15, bottom: 50 } },
+                    React.createElement(CartesianGrid, { strokeDasharray: "3 3", stroke: "#EEE", vertical: false }),
+                    React.createElement(XAxis, {
+                      dataKey: "name",
+                      tick: { fontSize: 10, fill: SRG_GREY },
+                      angle: -35,
+                      textAnchor: "end",
+                      height: 70,
+                      interval: 0
+                    }),
+                    React.createElement(YAxis, { tick: { fontSize: 10, fill: SRG_GREY }, allowDecimals: false }),
+                    React.createElement(Tooltip, { cursor: { fill: "#F5F5F5" } }),
+                    React.createElement(Bar, { dataKey: "filled", name: "Confirmed", fill: SRG_DARK, stackId: "a" }),
+                    React.createElement(Bar, { dataKey: "tbc", name: "TBC", fill: SRG_RED, stackId: "a" }),
+                    React.createElement(Bar, { dataKey: "contingency", name: "Contingency", fill: "#9CA3AF", stackId: "b" }),
+                    React.createElement(Legend, { wrapperStyle: { fontSize: 11, paddingTop: 8 } })
+                  )
+                )
+              ),
+              React.createElement("div", {
+                style: { background: "white", padding: 24, boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}` }
+              },
+                React.createElement("div", {
+                  style: { fontSize: 11, fontWeight: 700, marginBottom: 16, color: SRG_GREY, textTransform: "uppercase", letterSpacing: 1 }
+                }, "Shift Distribution & Ticket Coverage"),
+                React.createElement("div", { style: { display: "flex", gap: 16, alignItems: "center" } },
+                  React.createElement("div", { style: { width: "42%", display: "flex", flexDirection: "column", alignItems: "center" } },
+                    React.createElement(ResponsiveContainer, { width: "100%", height: 170 },
+                      React.createElement(PieChart, null,
+                        React.createElement(Pie, {
+                          data: sd,
+                          cx: "50%",
+                          cy: "50%",
+                          innerRadius: 45,
+                          outerRadius: 72,
+                          dataKey: "value",
+                          label: false,
+                          labelLine: false
+                        },
+                          sd.map((_, i) => React.createElement(Cell, { key: i, fill: i === 0 ? SRG_DARK : SRG_RED }))
+                        )
+                      )
+                    ),
+                    React.createElement("div", { style: { display: "flex", gap: 12, marginTop: 8, fontSize: 11 } },
+                      sd.map((s, i) => React.createElement("div", {
+                        key: i,
+                        style: { display: "flex", alignItems: "center", gap: 5 }
+                      },
+                        React.createElement("div", {
+                          style: { width: 10, height: 10, background: i === 0 ? SRG_DARK : SRG_RED }
+                        }),
+                        React.createElement("span", { style: { color: SRG_GREY, fontWeight: 600 } }, `${s.name}: ${s.value}`)
+                      ))
+                    )
+                  ),
+                  React.createElement("div", { style: { flex: 1 } },
+                    Object.entries(tc).map(([k, v]) =>
+                      React.createElement("div", {
+                        key: k,
+                        style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }
+                      },
+                        React.createElement("div", {
+                          style: { width: 32, fontSize: 10, fontWeight: 600, color: SRG_GREY }
+                        }, k),
+                        React.createElement("div", {
+                          style: { flex: 1, height: 10, background: "#EEE", overflow: "hidden" }
+                        },
+                          React.createElement("div", {
+                            style: {
+                              height: "100%",
+                              width: `${v / E.length * 100}%`,
+                              background: v / E.length > 0.5 ? SRG_DARK : v / E.length > 0.25 ? RM : SRG_RED
+                            }
+                          })
+                        ),
+                        React.createElement("div", {
+                          style: { fontSize: 10, fontWeight: 700, width: 28, textAlign: "right", color: SRG_DARK }
+                        }, `${Math.round(v / E.length * 100)}%`)
+                      )
+                    )
+                  )
+                )
+              )
+            ),
+
+            React.createElement("div", {
+              style: { display: "flex", gap: 12, marginBottom: 10, flexWrap: "wrap", alignItems: "center" }
+            },
+              React.createElement("span", {
+                style: { fontSize: 11, fontWeight: 700, color: SRG_GREY, textTransform: "uppercase", letterSpacing: 0.8 }
+              }, "Filter:"),
+              React.createElement("select", {
+                value: fG,
+                onChange: e => sfG(e.target.value),
+                style: { padding: "7px 12px", border: `1px solid ${SRG_BORDER}`, fontSize: 12, background: "white", color: SRG_DARK }
+              },
+                React.createElement("option", { value: "All" }, "All Groups"),
+                groups.map(g => React.createElement("option", { key: g, value: g }, g))
+              ),
+              React.createElement("select", {
+                value: fS,
+                onChange: e => sfS(e.target.value),
+                style: { padding: "7px 12px", border: `1px solid ${SRG_BORDER}`, fontSize: 12, background: "white", color: SRG_DARK }
+              },
+                React.createElement("option", { value: "All" }, "All Shifts"),
+                React.createElement("option", { value: "Day" }, "Day Shift"),
+                React.createElement("option", { value: "Night" }, "Night Shift")
+              ),
+              fT.length > 0 && React.createElement("button", {
+                onClick: () => sfT([]),
+                style: {
+                  padding: "6px 12px",
+                  border: `1px solid ${SRG_RED}`,
+                  fontSize: 11,
+                  cursor: "pointer",
+                  background: "white",
+                  color: SRG_RED,
+                  fontWeight: 600
+                }
+              }, "Clear tickets ✕"),
+              React.createElement("span", {
+                style: { fontSize: 11, color: SRG_GREY, marginLeft: "auto", fontWeight: 600 }
+              }, `${filtered.length} personnel shown`)
+            ),
+
+            React.createElement("div", {
+              style: { display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }
+            },
+              React.createElement("span", {
+                style: { fontSize: 10, fontWeight: 700, color: SRG_GREY, marginRight: 4, textTransform: "uppercase", letterSpacing: 0.8 }
+              }, "Tickets:"),
+              [
+                { key: "cse", label: "CSE" },
+                { key: "wah", label: "WAH" },
+                { key: "ewp", label: "EWP" },
+                { key: "ba", label: "Breathing Apparatus" },
+                { key: "fork", label: "Forklift" },
+                { key: "hr", label: "HR Licence" },
+                { key: "dog", label: "Dogging" },
+                { key: "rig", label: "Rigging" },
+                { key: "gta", label: "Gas Test" },
+                { key: "fa", label: "First Aid" }
+              ].map(t => {
+                const a = fT.includes(t.key);
+                return React.createElement("button", {
+                  key: t.key,
+                  onClick: () => toggle(t.key),
+                  style: {
+                    padding: "5px 12px",
+                    border: a ? `2px solid ${SRG_RED}` : `1px solid ${SRG_BORDER}`,
+                    cursor: "pointer",
+                    fontSize: 11,
+                    fontWeight: a ? 700 : 500,
+                    background: a ? SRG_RED : "white",
+                    color: a ? "white" : SRG_DARK
+                  }
+                }, t.label + (a ? ` (${filtered.length})` : ""));
+              })
+            ),
+
+            React.createElement("div", {
+              style: { background: "white", boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}`, overflow: "auto" }
+            },
+              React.createElement("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 11 } },
+                React.createElement("thead", null,
+                  React.createElement("tr", { style: { background: SRG_DARK, color: "white" } },
+                    React.createElement("th", { style: { padding: "12px 12px", textAlign: "left", fontWeight: 700, position: "sticky", left: 0, background: SRG_DARK, zIndex: 1, textTransform: "uppercase", fontSize: 10, letterSpacing: 0.5 } }, "Name"),
+                    React.createElement("th", { style: { padding: "12px 8px", textAlign: "left", fontWeight: 700, textTransform: "uppercase", fontSize: 10, letterSpacing: 0.5 } }, "Role"),
+                    React.createElement("th", { style: { padding: "12px 6px", textAlign: "center", fontWeight: 700, textTransform: "uppercase", fontSize: 10, letterSpacing: 0.5 } }, "Shift"),
+                    React.createElement("th", { style: { padding: "12px 4px", textAlign: "center", fontWeight: 700, fontSize: 9, textTransform: "uppercase" } }, "Days"),
+                    React.createElement("th", { style: { padding: "12px 4px", textAlign: "center", fontWeight: 700, fontSize: 9, textTransform: "uppercase" } }, React.createElement(React.Fragment, null, "Trade", React.createElement("br"), "Yrs")),
+                    React.createElement("th", { style: { padding: "12px 4px", textAlign: "center", fontWeight: 700, fontSize: 9, textTransform: "uppercase" } }, React.createElement(React.Fragment, null, "S/D", React.createElement("br"), "Yrs")),
+                    TC.map(t => React.createElement("th", {
+                      key: t.key,
+                      style: { padding: "12px 4px", textAlign: "center", fontWeight: 700, fontSize: 9, textTransform: "uppercase" }
+                    }, t.label)),
+                    React.createElement("th", { style: { padding: "12px 12px", textAlign: "left", fontWeight: 700, minWidth: 240, textTransform: "uppercase", fontSize: 10, letterSpacing: 0.5 } }, "Summary")
+                  )
+                ),
+                React.createElement("tbody", null,
+                  filtered.map((e, i) => {
+                    const isTBC = e.name.startsWith("TBC");
+                    const bg = isTBC ? "#FFF9E6" : i % 2 === 0 ? "#FAFAFA" : "white";
+                    return React.createElement("tr", {
+                      key: e.id,
+                      style: { background: bg, borderBottom: `1px solid ${SRG_BORDER}` }
+                    },
+                      React.createElement("td", {
+                        style: { padding: "9px 12px", fontWeight: 700, color: isTBC ? RM : SRG_DARK, whiteSpace: "nowrap", position: "sticky", left: 0, background: bg, zIndex: 1 }
+                      }, e.name),
+                      React.createElement("td", { style: { padding: "9px 8px", color: SRG_GREY, whiteSpace: "nowrap" } }, e.role),
+                      React.createElement("td", { style: { padding: "9px 6px", textAlign: "center" } },
+                        React.createElement("span", {
+                          style: {
+                            padding: "3px 8px",
+                            fontSize: 9,
+                            fontWeight: 700,
+                            background: e.shift === "Day" ? "#E8F0FE" : SRG_DARK,
+                            color: e.shift === "Day" ? "#1E40AF" : "white",
+                            textTransform: "uppercase",
+                            letterSpacing: 0.3
+                          }
+                        }, e.shift)
+                      ),
+                      React.createElement("td", { style: { padding: "9px 4px", textAlign: "center", fontWeight: 700 } }, e.days),
+                      React.createElement("td", {
+                        style: { padding: "9px 4px", textAlign: "center", fontWeight: 700, color: e.ty >= 10 ? RL : e.ty >= 3 ? SRG_DARK : "#B0B0B0" }
+                      }, e.ty || "–"),
+                      React.createElement("td", {
+                        style: { padding: "9px 4px", textAlign: "center", fontWeight: 700, color: e.sy >= 5 ? RL : e.sy >= 2 ? SRG_DARK : "#B0B0B0" }
+                      }, e.sy || "–"),
+                      TC.map(t => {
+                        const v = e[t.key];
+                        return React.createElement("td", {
+                          key: t.key,
+                          style: { padding: "9px 4px", textAlign: "center", fontSize: t.key === "rig" ? 8 : 13, color: t.key === "rig" ? SRG_GREY : SRG_RED, fontWeight: t.key === "rig" ? 600 : 400 }
+                        }, t.key === "rig" ? (v || "") : (v ? "✓" : ""));
+                      }),
+                      React.createElement("td", { style: { padding: "9px 12px", fontSize: 11, color: SRG_GREY, lineHeight: 1.5 } }, e.sum)
+                    );
+                  })
+                )
+              )
+            )
+          ),
+
+          tab === "risk" && React.createElement(React.Fragment, null,
+
+            React.createElement("div", {
+              style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 24 }
+            },
+              React.createElement(SC, { label: "Total Risks Identified", value: risks.length }),
+              React.createElement(SC, { label: "High Risk", value: risks.filter(r => r.level === "HIGH").length, sub: "Unfilled positions" }),
+              React.createElement(SC, { label: "Medium Risk", value: risks.filter(r => r.level === "MED").length, sub: "Experience / documentation gaps" }),
+              React.createElement(SC, { label: "Low Risk", value: risks.filter(r => r.level === "LOW").length, sub: "Ticket coverage gaps" })
+            ),
+
+            React.createElement("div", {
+              style: { background: "white", boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}`, overflow: "auto", marginBottom: 24 }
+            },
+              React.createElement("div", {
+                style: { padding: "18px 24px", borderBottom: `2px solid ${SRG_RED}`, fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: 1, color: SRG_DARK }
+              }, "Risk Register"),
+              React.createElement("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 12 } },
+                React.createElement("thead", null,
+                  React.createElement("tr", { style: { background: "#FAFAFA", borderBottom: `1px solid ${SRG_BORDER}` } },
+                    React.createElement("th", { style: { padding: "12px", textAlign: "left", fontWeight: 700, width: 75, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Level"),
+                    React.createElement("th", { style: { padding: "12px 8px", textAlign: "left", fontWeight: 700, width: 130, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Trade Group"),
+                    React.createElement("th", { style: { padding: "12px 8px", textAlign: "center", fontWeight: 700, width: 70, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Shift"),
+                    React.createElement("th", { style: { padding: "12px", textAlign: "left", fontWeight: 700, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Issue"),
+                    React.createElement("th", { style: { padding: "12px", textAlign: "left", fontWeight: 700, textTransform: "uppercase", fontSize: 10, color: SRG_GREY, letterSpacing: 0.5 } }, "Recommended Action")
+                  )
+                ),
+                React.createElement("tbody", null,
+                  risks.map((r, i) =>
+                    React.createElement("tr", {
+                      key: i,
+                      style: {
+                        borderBottom: `1px solid ${SRG_BORDER}`,
+                        background: r.level === "HIGH" ? "#FEF2F2" : i % 2 === 0 ? "white" : "#FAFAFA"
+                      }
+                    },
+                      React.createElement("td", { style: { padding: "10px 12px" } }, React.createElement(RB, { level: r.level })),
+                      React.createElement("td", { style: { padding: "10px 8px", fontWeight: 700, color: SRG_DARK } }, r.group),
+                      React.createElement("td", { style: { padding: "10px 8px", textAlign: "center" } },
+                        React.createElement("span", {
+                          style: {
+                            padding: "3px 8px",
+                            fontSize: 10,
+                            fontWeight: 700,
+                            background: r.shift === "Day" ? "#E8F0FE" : SRG_DARK,
+                            color: r.shift === "Day" ? "#1E40AF" : "white",
+                            textTransform: "uppercase"
+                          }
+                        }, r.shift)
+                      ),
+                      React.createElement("td", { style: { padding: "10px 12px", color: SRG_DARK } }, r.issue),
+                      React.createElement("td", { style: { padding: "10px 12px", color: SRG_GREY, fontSize: 11 } }, r.action)
+                    )
+                  )
+                )
+              )
+            ),
+
+            React.createElement("div", {
+              style: { fontWeight: 700, fontSize: 12, marginBottom: 12, textTransform: "uppercase", letterSpacing: 1, color: SRG_GREY }
+            }, "Experience Ranking by Trade Group"),
+
+            React.createElement("div", {
+              style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(360px,1fr))", gap: 16 }
+            },
+              GROUP_ORDER.filter(g => ranked[g] && ranked[g].length > 0).map(g =>
+                React.createElement("div", {
+                  key: g,
+                  style: { background: "white", boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}`, overflow: "hidden" }
+                },
+                  React.createElement("div", {
+                    style: { padding: "14px 18px", background: SRG_DARK, color: "white", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.8, borderBottom: `3px solid ${SRG_RED}` }
+                  }, `${g} (${ranked[g].length})`),
+                  ranked[g].map((e, i) => {
+                    const sc = e.ty + e.sy * 2;
+                    const tier = i === 0 ? "Lead" : sc >= 15 ? "Senior" : sc >= 6 ? "Competent" : "Developing";
+                    const tcl = tier === "Lead" ? RL : tier === "Senior" ? "#0891B2" : tier === "Competent" ? SRG_GREY : RM;
+                    return React.createElement("div", {
+                      key: e.id,
+                      style: {
+                        padding: "10px 18px",
+                        borderBottom: `1px solid ${SRG_BORDER}`,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12
+                      }
+                    },
+                      React.createElement("div", {
+                        style: { width: 24, height: 24, background: SRG_DARK, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0 }
+                      }, i + 1),
+                      React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                        React.createElement("div", {
+                          style: { fontSize: 12, fontWeight: 700, color: SRG_DARK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }
+                        }, e.name),
+                        React.createElement("div", { style: { fontSize: 10, color: SRG_GREY, marginTop: 1 } }, `${e.role} · ${e.shift} · ${e.ty}yr trade · ${e.sy}yr shutdown`)
+                      ),
+                      React.createElement("span", {
+                        style: { padding: "3px 9px", fontSize: 9, fontWeight: 700, color: "white", background: tcl, flexShrink: 0, textTransform: "uppercase", letterSpacing: 0.3 }
+                      }, tier)
+                    );
+                  })
+                )
+              )
+            )
+          ),
+
+          tab === "roster" && React.createElement(React.Fragment, null,
+
+            React.createElement("div", {
+              style: { marginBottom: 16, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }
+            },
+              React.createElement("div", null,
+                React.createElement("div", {
+                  style: { fontSize: 11, fontWeight: 700, color: SRG_GREY, textTransform: "uppercase", letterSpacing: 1 }
+                }, "Shutdown Roster"),
+                React.createElement("div", {
+                  style: { fontSize: 13, color: SRG_DARK, marginTop: 2 }
+                }, `25 May \u2014 21 Jun 2026 (28 days) · ${filteredRoster.length} rows shown`)
+              ),
+
+              React.createElement("div", {
+                style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }
+              },
+                React.createElement("span", {
+                  style: { fontSize: 10, fontWeight: 700, color: SRG_GREY, textTransform: "uppercase", letterSpacing: 0.8 }
+                }, "Filter:"),
+
+                React.createElement("button", {
+                  onClick: () => setRShift("All"),
+                  style: {
+                    padding: "6px 12px",
+                    border: rShift === "All" ? `2px solid ${SRG_RED}` : `1px solid ${SRG_BORDER}`,
+                    background: rShift === "All" ? SRG_RED : "white",
+                    color: rShift === "All" ? "white" : SRG_DARK,
+                    cursor: "pointer",
+                    fontSize: 11,
+                    fontWeight: 700
+                  }
+                }, "All Shifts"),
+
+                React.createElement("button", {
+                  onClick: () => setRShift("Day"),
+                  style: {
+                    padding: "6px 12px",
+                    border: rShift === "Day" ? `2px solid ${SRG_RED}` : `1px solid ${SRG_BORDER}`,
+                    background: rShift === "Day" ? SRG_RED : "white",
+                    color: rShift === "Day" ? "white" : SRG_DARK,
+                    cursor: "pointer",
+                    fontSize: 11,
+                    fontWeight: 700
+                  }
+                }, "Day Shift"),
+
+                React.createElement("button", {
+                  onClick: () => setRShift("Night"),
+                  style: {
+                    padding: "6px 12px",
+                    border: rShift === "Night" ? `2px solid ${SRG_RED}` : `1px solid ${SRG_BORDER}`,
+                    background: rShift === "Night" ? SRG_RED : "white",
+                    color: rShift === "Night" ? "white" : SRG_DARK,
+                    cursor: "pointer",
+                    fontSize: 11,
+                    fontWeight: 700
+                  }
+                }, "Night Shift"),
+
+                React.createElement("select", {
+                  value: rRole,
+                  onChange: e => setRRole(e.target.value),
+                  style: {
+                    padding: "7px 12px",
+                    border: `1px solid ${SRG_BORDER}`,
+                    fontSize: 11,
+                    background: "white",
+                    color: SRG_DARK,
+                    minWidth: 180
+                  }
+                },
+                  React.createElement("option", { value: "All" }, "All Positions"),
+                  rosterRoles.map(role => React.createElement("option", { key: role, value: role }, role))
+                )
+              ),
+
+              React.createElement("div", { style: { display: "flex", gap: 12, fontSize: 10, flexWrap: "wrap" } },
+                [
+                  { code: "DS", label: "Day Shift", bg: "#E8F0FE", fg: "#1E40AF" },
+                  { code: "NS", label: "Night Shift", bg: SRG_DARK, fg: "white" }
+                ].map(l =>
+                  React.createElement("div", { key: l.code, style: { display: "flex", alignItems: "center", gap: 4 } },
+                    React.createElement("span", {
+                      style: { padding: "2px 6px", fontSize: 9, fontWeight: 700, background: l.bg, color: l.fg }
+                    }, l.code),
+                    React.createElement("span", { style: { color: SRG_GREY } }, l.label)
+                  )
+                )
+              )
+            ),
+
+            React.createElement("div", {
+              style: { background: "white", boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}`, overflow: "auto" }
+            },
+              React.createElement("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 10 } },
+                React.createElement("thead", null,
+                  React.createElement("tr", { style: { background: SRG_DARK, color: "white" } },
+                    React.createElement("th", {
+                      style: { padding: "10px 12px", textAlign: "left", fontWeight: 700, position: "sticky", left: 0, background: SRG_DARK, zIndex: 2, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, minWidth: 150 }
+                    }, "Name"),
+                    React.createElement("th", {
+                      style: { padding: "10px 8px", textAlign: "left", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, minWidth: 130 }
+                    }, "Role"),
+                    React.createElement("th", {
+                      style: { padding: "10px 8px", textAlign: "left", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, minWidth: 100 }
+                    }, "Notes"),
+                    DATES.map((d, i) => React.createElement("th", {
+                      key: i,
+                      style: { padding: "8px 2px", textAlign: "center", fontWeight: 700, fontSize: 9, borderLeft: "1px solid #2D2D2D", minWidth: 38 }
+                    },
+                      React.createElement("div", { style: { fontSize: 8, opacity: 0.6, fontWeight: 500 } }, DOW[i]),
+                      React.createElement("div", null, d)
+                    ))
+                  )
+                ),
+                React.createElement("tbody", null,
+                  filteredRoster.map((r, ri) => {
+                    const isTBC = r.name === "TBC";
+                    const bg = isTBC ? "#FFF9E6" : ri % 2 === 0 ? "#FAFAFA" : "white";
+                    return React.createElement("tr", {
+                      key: ri,
+                      style: { background: bg, borderBottom: `1px solid ${SRG_BORDER}` }
+                    },
+                      React.createElement("td", {
+                        style: { padding: "8px 12px", fontWeight: 700, color: isTBC ? RM : SRG_DARK, whiteSpace: "nowrap", position: "sticky", left: 0, background: bg, zIndex: 1, fontSize: 11 }
+                      }, r.name),
+                      React.createElement("td", { style: { padding: "8px", color: SRG_GREY, whiteSpace: "nowrap", fontSize: 10 } }, r.role),
+                      React.createElement("td", { style: { padding: "8px", color: SRG_GREY, fontSize: 9, fontStyle: "italic" } }, r.notes),
+                      r.codes.map((c, ci) => {
+                        let bgC = "transparent", fgC = SRG_GREY;
+                        if (c === "DS") { bgC = "#E8F0FE"; fgC = "#1E40AF"; }
+                        else if (c === "NS") { bgC = SRG_DARK; fgC = "white"; }
+                        else if (c === "FIA" || c === "DIP") { bgC = "#DCFCE7"; fgC = "#166534"; }
+                        else if (c === "FOP" || c === "FOA" || c === "DOP") { bgC = "#FEF3C7"; fgC = "#92400E"; }
+                        return React.createElement("td", {
+                          key: ci,
+                          style: {
+                            padding: "6px 2px",
+                            textAlign: "center",
+                            borderLeft: `1px solid ${SRG_BORDER}`,
+                            background: bgC,
+                            color: fgC,
+                            fontWeight: 700,
+                            fontSize: 9
+                          }
+                        }, c);
+                      })
+                    );
+                  })
+                )
+              )
+            ),
+
+            React.createElement("div", {
+              style: { marginTop: 16, padding: 14, background: "white", borderLeft: `3px solid ${SRG_RED}`, fontSize: 11, color: SRG_GREY, border: `1px solid ${SRG_BORDER}` }
+            },
+              React.createElement("span", { style: { fontWeight: 700, color: SRG_DARK } }, "Shift Codes: "),
+              "DS = Day Shift, NS = Night Shift. Three phases: Pre-Shut (25 May\u20135 Jun), Shutdown (6\u201318 Jun), Post-Shut (19\u201321 Jun). Source: Mechanical Labour spreadsheet NAAN 2 SRG Global REV1."
+            )
+          ),
+
+          tab === "print" && React.createElement(React.Fragment, null,
+
+            React.createElement("div", {
+              style: {
+                background: "white",
+                border: `1px solid ${SRG_BORDER}`,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                padding: 28
+              }
+            },
+
+              React.createElement("div", {
+                style: {
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 24,
+                  marginBottom: 24,
+                  flexWrap: "wrap"
+                }
+              },
+                React.createElement("div", null,
+                  React.createElement("div", {
+                    style: {
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: SRG_RED,
+                      letterSpacing: 1.2,
+                      textTransform: "uppercase"
+                    }
+                  }, "Client Summary"),
+                  React.createElement("div", {
+                    style: {
+                      fontSize: 26,
+                      fontWeight: 800,
+                      color: SRG_DARK,
+                      lineHeight: 1.15,
+                      marginTop: 4
+                    }
+                  }, "CSBP NAAN2 — Shutdown Workforce Summary"),
+                  React.createElement("div", {
+                    style: {
+                      fontSize: 13,
+                      color: SRG_GREY,
+                      marginTop: 4
+                    }
+                  }, "Kwinana · NAAN2 Shutdown 2026")
+                ),
+
+                React.createElement("button", {
+                  onClick: () => window.print(),
+                  style: {
+                    padding: "10px 16px",
+                    border: `1px solid ${SRG_DARK}`,
+                    background: "white",
+                    color: SRG_DARK,
+                    fontWeight: 700,
+                    fontSize: 12,
+                    cursor: "pointer",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.6
+                  }
+                }, "Print / Save PDF")
+              ),
+
+              React.createElement("div", {
+                style: {
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                  gap: 12,
+                  marginBottom: 24
+                }
+              },
+                React.createElement(SC, { label: "Planned Workforce", value: E.length, sub: "Core planned positions" }),
+                React.createElement(SC, { label: "Confirmed Workforce", value: tN, sub: "Named personnel only" }),
+                React.createElement(SC, { label: "Open Positions", value: tT, sub: "Still to be confirmed" }),
+                React.createElement(SC, { label: "Contingency Depth", value: CONTINGENCY.total, sub: "Separate backup workforce" })
+              ),
+
+              React.createElement("div", {
+                style: {
+                  display: "grid",
+                  gridTemplateColumns: "1.1fr 0.9fr",
+                  gap: 20,
+                  marginBottom: 24
+                }
+              },
+
+                React.createElement("div", {
+                  style: {
+                    border: `1px solid ${SRG_BORDER}`,
+                    padding: 18
+                  }
+                },
+                  React.createElement("div", {
+                    style: {
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: SRG_GREY,
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                      marginBottom: 12
+                    }
+                  }, "By-Trade Summary"),
+                  React.createElement("table", {
+                    style: { width: "100%", borderCollapse: "collapse", fontSize: 11 }
+                  },
+                    React.createElement("thead", null,
+                      React.createElement("tr", { style: { borderBottom: `1px solid ${SRG_BORDER}` } },
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "left", fontWeight: 700 } }, "Trade"),
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "center", fontWeight: 700 } }, "Planned"),
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "center", fontWeight: 700 } }, "Confirmed"),
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "center", fontWeight: 700 } }, "Gap"),
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "center", fontWeight: 700 } }, "Cont."),
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "left", fontWeight: 700 } }, "Readiness")
+                      )
+                    ),
+                    React.createElement("tbody", null,
+                      tradeSummary.map((r, i) =>
+                        React.createElement("tr", {
+                          key: r.group,
+                          style: {
+                            borderBottom: `1px solid ${SRG_BORDER}`,
+                            background: i % 2 === 0 ? "white" : "#FAFAFA"
+                          }
+                        },
+                          React.createElement("td", { style: { padding: "8px 6px", fontWeight: 700 } }, r.group),
+                          React.createElement("td", { style: { padding: "8px 6px", textAlign: "center" } }, r.planned),
+                          React.createElement("td", { style: { padding: "8px 6px", textAlign: "center" } }, r.confirmed),
+                          React.createElement("td", { style: { padding: "8px 6px", textAlign: "center", color: r.gap > 0 ? RH : SRG_DARK, fontWeight: 700 } }, r.gap),
+                          React.createElement("td", { style: { padding: "8px 6px", textAlign: "center" } }, r.contingency || "–"),
+                          React.createElement("td", { style: { padding: "8px 6px" } }, React.createElement(ReadinessPill, { text: r.readiness, color: r.readinessColor }))
+                        )
+                      )
+                    )
+                  )
+                ),
+
+                React.createElement("div", {
+                  style: {
+                    border: `1px solid ${SRG_BORDER}`,
+                    padding: 18
+                  }
+                },
+                  React.createElement("div", {
+                    style: {
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: SRG_GREY,
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                      marginBottom: 12
+                    }
+                  }, "Critical Roles"),
+                  React.createElement("table", {
+                    style: { width: "100%", borderCollapse: "collapse", fontSize: 11 }
+                  },
+                    React.createElement("thead", null,
+                      React.createElement("tr", { style: { borderBottom: `1px solid ${SRG_BORDER}` } },
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "left", fontWeight: 700 } }, "Role"),
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "center", fontWeight: 700 } }, "Planned"),
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "center", fontWeight: 700 } }, "Confirmed"),
+                        React.createElement("th", { style: { padding: "8px 6px", textAlign: "center", fontWeight: 700 } }, "Gap")
+                      )
+                    ),
+                    React.createElement("tbody", null,
+                      criticalRoles.map((r, i) =>
+                        React.createElement("tr", {
+                          key: r.role,
+                          style: {
+                            borderBottom: `1px solid ${SRG_BORDER}`,
+                            background: i % 2 === 0 ? "white" : "#FAFAFA"
+                          }
+                        },
+                          React.createElement("td", { style: { padding: "8px 6px", fontWeight: 700 } }, r.role),
+                          React.createElement("td", { style: { padding: "8px 6px", textAlign: "center" } }, r.planned),
+                          React.createElement("td", { style: { padding: "8px 6px", textAlign: "center" } }, r.confirmed),
+                          React.createElement("td", { style: { padding: "8px 6px", textAlign: "center", color: r.gap > 0 ? RH : SRG_DARK, fontWeight: 700 } }, r.gap)
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+
+              React.createElement("div", {
+                style: {
+                  border: `1px solid ${SRG_BORDER}`,
+                  padding: 18,
+                  marginBottom: 20
+                }
+              },
+                React.createElement("div", {
+                  style: {
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: SRG_GREY,
+                    textTransform: "uppercase",
+                    letterSpacing: 1,
+                    marginBottom: 12
+                  }
+                }, "Key Risks & Mitigations"),
+                React.createElement("table", {
+                  style: { width: "100%", borderCollapse: "collapse", fontSize: 11 }
+                },
+                  React.createElement("thead", null,
+                    React.createElement("tr", { style: { borderBottom: `1px solid ${SRG_BORDER}` } },
+                      React.createElement("th", { style: { padding: "8px 6px", textAlign: "left", fontWeight: 700, width: 70 } }, "Level"),
+                      React.createElement("th", { style: { padding: "8px 6px", textAlign: "left", fontWeight: 700, width: 140 } }, "Trade Group"),
+                      React.createElement("th", { style: { padding: "8px 6px", textAlign: "left", fontWeight: 700 } }, "Issue"),
+                      React.createElement("th", { style: { padding: "8px 6px", textAlign: "left", fontWeight: 700 } }, "Mitigation")
+                    )
+                  ),
+                  React.createElement("tbody", null,
+                    printRisks.map((r, i) =>
+                      React.createElement("tr", {
+                        key: i,
+                        style: {
+                          borderBottom: `1px solid ${SRG_BORDER}`,
+                          background: i % 2 === 0 ? "white" : "#FAFAFA"
+                        }
+                      },
+                        React.createElement("td", { style: { padding: "8px 6px" } }, React.createElement(RB, { level: r.level })),
+                        React.createElement("td", { style: { padding: "8px 6px", fontWeight: 700 } }, r.group),
+                        React.createElement("td", { style: { padding: "8px 6px" } }, r.issue),
+                        React.createElement("td", { style: { padding: "8px 6px", color: SRG_GREY } }, r.action)
+                      )
+                    )
+                  )
+                )
+              ),
+
+              React.createElement("div", {
+                style: {
+                  border: `1px solid ${SRG_BORDER}`,
+                  padding: 18,
+                  fontSize: 11,
+                  color: SRG_GREY,
+                  lineHeight: 1.5
+                }
+              },
+                React.createElement("div", {
+                  style: {
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: SRG_GREY,
+                    textTransform: "uppercase",
+                    letterSpacing: 1,
+                    marginBottom: 10
+                  }
+                }, "Summary Notes"),
+                React.createElement("div", null,
+                  "CSBP NAAN2 Shutdown — Kwinana. Three phases: Pre-Shut (25 May–5 Jun), Shutdown (6–18 Jun), Post-Shut (19–21 Jun). Peak manning: 22 day / 14 night = 36 on site. Requirements: All Fitters, TAs and Riggers to be CSE trained. All tradespersons to have WAH tickets. 50% of Fitters and TAs to be BA trained. 50% of Fitters to have rigging tickets. All positions currently TBC — personnel to be confirmed."
+                )
+              )
+            )
+          ),
+
+          React.createElement("div", {
+            style: {
+              marginTop: 40,
+              padding: "20px 0",
+              borderTop: `1px solid ${SRG_BORDER}`,
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: 10,
+              color: "#B0B0B0",
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+              flexWrap: "wrap",
+              gap: 8
+            }
+          },
+            React.createElement("span", null, "SRG Global Integrated Services Pty Ltd · ABN 86 604 010 639"),
+            React.createElement("span", null, `Generated ${new Date().toLocaleDateString("en-AU")} · CSBP NAAN2 Shutdown 2026`)
+          )
+        )
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>
