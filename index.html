@@ -83,96 +83,90 @@
     const CONTINGENCY = {
       total: 0,
       byGroup: {
-        "Supervisor": 0,
-        "Fitter": 0,
-        "Rigger": 0,
-        "Truck and Driver": 0,
+        "Supervisor - Mechanical": 0,
+        "Boilermaker": 0,
+        "Coded Welder": 0,
+        "Mechanical Fitter": 0,
+        "Rigger - Advanced": 0,
+        "Rigger - Intermediate": 0,
         "Trade Assistant": 0
       }
     };
 
-    const E = [
-      {id:1,name:"TBC",role:"Supervisor",shift:"Day",days:24,group:"Supervisor",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift supervisor — pre-shut coordination, shutdown oversight and post-shut handback. Position to be confirmed."},
-      {id:2,name:"TBC",role:"Supervisor",shift:"Day",days:24,group:"Supervisor",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift supervisor — pre-shut coordination, shutdown oversight and post-shut handback. Position to be confirmed."},
-      {id:3,name:"TBC",role:"Supervisor",shift:"Night",days:19,group:"Supervisor",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift supervisor — pre-shut day support then transitions to nightshift for shutdown and post-shut. Position to be confirmed."},
-      {id:4,name:"TBC",role:"Fitter",shift:"Day",days:18,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — pre-shut mobilisation through shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
-      {id:5,name:"TBC",role:"Fitter",shift:"Day",days:18,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — pre-shut mobilisation through shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
-      {id:6,name:"TBC",role:"Fitter",shift:"Day",days:15,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — pre-shut mobilisation through shutdown. CSE, WAH required. Position to be confirmed."},
-      {id:7,name:"TBC",role:"Fitter",shift:"Day",days:13,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — shutdown ramp-up from 6-Jun. CSE, WAH required. Position to be confirmed."},
-      {id:8,name:"TBC",role:"Fitter",shift:"Day",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:9,name:"TBC",role:"Fitter",shift:"Day",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:10,name:"TBC",role:"Fitter",shift:"Day",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:11,name:"TBC",role:"Fitter",shift:"Night",days:16,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
-      {id:12,name:"TBC",role:"Fitter",shift:"Night",days:16,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
-      {id:13,name:"TBC",role:"Fitter",shift:"Night",days:12,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — shutdown ramp-up from 7-Jun. CSE, WAH required. Position to be confirmed."},
-      {id:14,name:"TBC",role:"Fitter",shift:"Night",days:12,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — shutdown ramp-up from 7-Jun. CSE, WAH required. Position to be confirmed."},
-      {id:15,name:"TBC",role:"Fitter",shift:"Night",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:16,name:"TBC",role:"Fitter",shift:"Night",days:11,group:"Fitter",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift fitter — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:17,name:"TBC",role:"Rigger",shift:"Day",days:18,group:"Rigger",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift rigger — pre-shut through post-shut. CSE, WAH required. Position to be confirmed."},
-      {id:18,name:"TBC",role:"Rigger",shift:"Day",days:13,group:"Rigger",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift rigger — shutdown phase. CSE, WAH required. Position to be confirmed."},
-      {id:19,name:"TBC",role:"Rigger",shift:"Night",days:16,group:"Rigger",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift rigger — shutdown and post-shut. CSE, WAH required. Position to be confirmed."},
-      {id:20,name:"TBC",role:"Rigger",shift:"Night",days:11,group:"Rigger",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift rigger — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:21,name:"TBC",role:"Truck and Driver",shift:"Day",days:1,group:"Truck and Driver",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Truck and driver — pre-shut mobilisation support 5-Jun only. Position to be confirmed."},
-      {id:22,name:"TBC",role:"Trade Assistant",shift:"Day",days:15,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — pre-shut through shutdown. CSE, WAH required. Position to be confirmed."},
-      {id:23,name:"TBC",role:"Trade Assistant",shift:"Day",days:14,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — pre-shut through shutdown. CSE, WAH required. Position to be confirmed."},
-      {id:24,name:"TBC",role:"Trade Assistant",shift:"Day",days:13,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — shutdown 6\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:25,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:26,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:27,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:28,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:29,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:30,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:31,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:32,name:"TBC",role:"Trade Assistant",shift:"Day",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Day shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:33,name:"TBC",role:"Trade Assistant",shift:"Night",days:13,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — shutdown 6\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:34,name:"TBC",role:"Trade Assistant",shift:"Night",days:13,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — shutdown 6\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:35,name:"TBC",role:"Trade Assistant",shift:"Night",days:12,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — shutdown ramp-up from 7-Jun. CSE, WAH required. Position to be confirmed."},
-      {id:36,name:"TBC",role:"Trade Assistant",shift:"Night",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."},
-      {id:37,name:"TBC",role:"Trade Assistant",shift:"Night",days:11,group:"Trade Assistant",ty:0,sy:0,cse:false,wah:false,ewp:false,ba:false,fork:false,hr:false,dog:false,rig:"",gta:false,fa:false,sum:"Night shift trade assistant — full shutdown 8\u201318 Jun. CSE, WAH required. Position to be confirmed."}
+    const SUM_MAP = {
+      "Supervisor - Mechanical-Day": "Day shift mechanical supervisor — 5-day shutdown coordination and oversight. Position to be confirmed.",
+      "Boilermaker-Day": "Day shift boilermaker — structural / pressure work across the 5-day shut. CSE, WAH required. Position to be confirmed.",
+      "Boilermaker-Night": "Night shift boilermaker — structural / pressure work across the 5-day shut. CSE, WAH required. Position to be confirmed.",
+      "Coded Welder-Day": "Day shift coded welder — pressure / coded welding work across the 5-day shut. CSE, WAH required. Position to be confirmed.",
+      "Mechanical Fitter-Day": "Day shift mechanical fitter — 5-day shutdown mechanical work. CSE, WAH required. Position to be confirmed.",
+      "Mechanical Fitter-Night": "Night shift mechanical fitter — 5-day shutdown mechanical work. CSE, WAH required. Position to be confirmed.",
+      "Rigger - Advanced-Day": "Day shift advanced rigger — critical lifts / complex rigging across the 5-day shut. CSE, WAH required. Position to be confirmed.",
+      "Rigger - Advanced-Night": "Night shift advanced rigger — critical lifts / complex rigging across the 5-day shut. CSE, WAH required. Position to be confirmed.",
+      "Rigger - Intermediate-Day": "Day shift intermediate rigger — general rigging support across the 5-day shut. CSE, WAH required. Position to be confirmed.",
+      "Rigger - Intermediate-Night": "Night shift intermediate rigger — general rigging support across the 5-day shut. CSE, WAH required. Position to be confirmed.",
+      "Trade Assistant-Day": "Day shift trade assistant — general trade support across the 5-day shut. CSE, WAH required. Position to be confirmed.",
+      "Trade Assistant-Night": "Night shift trade assistant — general trade support across the 5-day shut. CSE, WAH required. Position to be confirmed."
+    };
+
+    const MANNING = [
+      { group: "Supervisor - Mechanical", day: 4,  night: 0  },
+      { group: "Boilermaker",             day: 5,  night: 5  },
+      { group: "Coded Welder",            day: 10, night: 0  },
+      { group: "Mechanical Fitter",       day: 20, night: 20 },
+      { group: "Rigger - Advanced",       day: 5,  night: 5  },
+      { group: "Rigger - Intermediate",   day: 5,  night: 5  },
+      { group: "Trade Assistant",         day: 10, night: 10 }
     ];
 
-    const DATES = ["25 May","26 May","27 May","28 May","29 May","30 May","31 May","01 Jun","02 Jun","03 Jun","04 Jun","05 Jun","06 Jun","07 Jun","08 Jun","09 Jun","10 Jun","11 Jun","12 Jun","13 Jun","14 Jun","15 Jun","16 Jun","17 Jun","18 Jun","19 Jun","20 Jun","21 Jun"];
-    const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    const E = (() => {
+      const out = [];
+      let id = 1;
+      MANNING.forEach(m => {
+        for (let i = 0; i < m.day; i++) {
+          out.push({
+            id: id++, name: "TBC", role: m.group, shift: "Day", days: 5, group: m.group,
+            ty: 0, sy: 0, cse: false, wah: false, ewp: false, ba: false, fork: false,
+            hr: false, dog: false, rig: "", gta: false, fa: false,
+            sum: SUM_MAP[m.group + "-Day"]
+          });
+        }
+        for (let i = 0; i < m.night; i++) {
+          out.push({
+            id: id++, name: "TBC", role: m.group, shift: "Night", days: 5, group: m.group,
+            ty: 0, sy: 0, cse: false, wah: false, ewp: false, ba: false, fork: false,
+            hr: false, dog: false, rig: "", gta: false, fa: false,
+            sum: SUM_MAP[m.group + "-Night"]
+          });
+        }
+      });
+      return out;
+    })();
 
-    const ROSTER = [
-      {name:"TBC",role:"Supervisor (Day 1)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["DS","DS","DS","DS","DS","","","DS","DS","DS","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
-      {name:"TBC",role:"Supervisor (Day 2)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["DS","DS","DS","DS","DS","","","DS","DS","DS","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
-      {name:"TBC",role:"Supervisor (Night)",notes:"Pre-Shut DS then Shutdown NS",codes:["","","","","","","","DS","DS","DS","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS"]},
-      {name:"TBC",role:"Fitter (Day 1)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
-      {name:"TBC",role:"Fitter (Day 2)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
-      {name:"TBC",role:"Fitter (Day 3)",notes:"Pre-Shut + Shutdown",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Fitter (Day 4)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Fitter (Day 5)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Fitter (Day 6)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Fitter (Day 7)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Fitter (Night 1)",notes:"Shutdown + Post-Shut",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS"]},
-      {name:"TBC",role:"Fitter (Night 2)",notes:"Shutdown + Post-Shut",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS"]},
-      {name:"TBC",role:"Fitter (Night 3)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
-      {name:"TBC",role:"Fitter (Night 4)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
-      {name:"TBC",role:"Fitter (Night 5)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
-      {name:"TBC",role:"Fitter (Night 6)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
-      {name:"TBC",role:"Rigger (Day 1)",notes:"Pre-Shut + Shutdown + Post-Shut",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS"]},
-      {name:"TBC",role:"Rigger (Day 2)",notes:"Shutdown",codes:["","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Rigger (Night 1)",notes:"Shutdown + Post-Shut",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS"]},
-      {name:"TBC",role:"Rigger (Night 2)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
-      {name:"TBC",role:"Truck and Driver",notes:"Pre-Shut Only",codes:["","","","","","","","","","","","DS","","","","","","","","","","","","","","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 1)",notes:"Pre-Shut + Shutdown",codes:["","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 2)",notes:"Pre-Shut + Shutdown",codes:["","","","","","","","","","","DS","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 3)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 4)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 5)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 6)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 7)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 8)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 9)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 10)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Day 11)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","DS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Night 1)",notes:"Shutdown",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Night 2)",notes:"Shutdown",codes:["","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Night 3)",notes:"Shutdown Ramp-Up",codes:["","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Night 4)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]},
-      {name:"TBC",role:"Trade Assistant (Night 5)",notes:"Full Shutdown",codes:["","","","","","","","","","","","","","","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","NS","","",""]}
-    ];
+    const DATES = ["18 May","19 May","20 May","21 May","22 May"];
+    const DOW = ["Mon","Tue","Wed","Thu","Fri"];
+
+    const ROSTER = (() => {
+      const rows = [];
+      MANNING.forEach(m => {
+        for (let i = 0; i < m.day; i++) {
+          rows.push({
+            name: "TBC",
+            role: `${m.group} (Day ${i + 1})`,
+            notes: "Tronox May Major — 5-day shut",
+            codes: ["DS","DS","DS","DS","DS"]
+          });
+        }
+        for (let i = 0; i < m.night; i++) {
+          rows.push({
+            name: "TBC",
+            role: `${m.group} (Night ${i + 1})`,
+            notes: "Tronox May Major — 5-day shut",
+            codes: ["NS","NS","NS","NS","NS"]
+          });
+        }
+      });
+      return rows;
+    })();
 
     const TC = [
       { key: "cse", label: "CSE" },
@@ -187,7 +181,7 @@
       { key: "fa", label: "FA" }
     ];
 
-    const GROUP_ORDER = ["Supervisor","Fitter","Rigger","Truck and Driver","Trade Assistant"];
+    const GROUP_ORDER = ["Supervisor - Mechanical","Boilermaker","Coded Welder","Mechanical Fitter","Rigger - Advanced","Rigger - Intermediate","Trade Assistant"];
     function App() {
       const [tab, setTab] = useState("profile");
       const [fG, sfG] = useState("All");
@@ -278,11 +272,11 @@
               }
             });
 
-            if (["Fitter", "Trade Assistant", "Roller Crew"].includes(g) && !named.some(e => e.tele) && named.length > 0) {
+            if (["Mechanical Fitter", "Trade Assistant", "Boilermaker"].includes(g) && !named.some(e => e.tele) && named.length > 0) {
               r.push({ group: g, shift: s, level: "LOW", issue: "No telehandler ticket holder in group", action: "Confirm telehandler access from adjacent crew or source ticket holder." });
             }
 
-            if (!named.some(e => e.gta) && named.length > 2 && ["Fitter", "Boilermaker"].includes(g)) {
+            if (!named.some(e => e.gta) && named.length > 2 && ["Mechanical Fitter", "Boilermaker", "Coded Welder"].includes(g)) {
               r.push({ group: g, shift: s, level: "LOW", issue: "No gas testing ticket holder in group", action: "Confirm GTA coverage from HSE or adjacent crew for confined space/hot work entries." });
             }
 
@@ -299,7 +293,7 @@
 
       const criticalRoles = useMemo(() => {
         const wanted = [
-          "Supervisor"
+          "Supervisor - Mechanical"
         ];
 
         return wanted.map(role => {
@@ -441,7 +435,7 @@
               }, "Tronox — Major Shutdown Workforce Dashboard"),
               React.createElement("div", {
                 style: { fontSize: 12, color: SRG_GREY, marginTop: 2 }
-              }, `Tronox Major Shutdown 2026 · ${E.length} Positions`)
+              }, `Tronox May Major Shutdown · 18–22 May 2026 · ${E.length} Positions`)
             )
           ),
           React.createElement("div", {
@@ -478,7 +472,7 @@
 
             React.createElement("div", {
               style: { marginTop: -8, marginBottom: 24, fontSize: 11, color: SRG_GREY, fontStyle: "italic" }
-            }, "Tronox Major Shutdown. Three phases: Pre-Shut (25 May\u20135 Jun), Shutdown (6\u201318 Jun), Post-Shut (19\u201321 Jun). Peak: 22 day / 14 night. Requirements: CSE for Fitters/TAs/Riggers, WAH for all trades, 50% BA for Fitters/TAs, 50% Rigging for Fitters."),
+            }, "Tronox May Major Shutdown — 5-day mechanical shut, 18\u201322 May 2026 (Mon\u2013Fri). Peak manning: 59 day / 45 night. Requirements: CSE for Fitters / TAs / Riggers, WAH for all trades, 50% BA for Fitters / TAs, 50% Rigging for Fitters. Job #1353, South West \u2014 Scheduling Owner: Rogerson, Kirsten."),
 
             React.createElement("div", {
               style: { background: "white", boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}`, overflow: "auto", marginBottom: 24 }
@@ -868,7 +862,7 @@
                 }, "Shutdown Roster"),
                 React.createElement("div", {
                   style: { fontSize: 13, color: SRG_DARK, marginTop: 2 }
-                }, `25 May \u2014 21 Jun 2026 (28 days) \xB7 ${filteredRoster.length} rows shown`)
+                }, `18\u201322 May 2026 (5 days) \xB7 ${filteredRoster.length} rows shown`)
               ),
 
               React.createElement("div", {
@@ -1015,7 +1009,7 @@
               style: { marginTop: 16, padding: 14, background: "white", borderLeft: `3px solid ${SRG_RED}`, fontSize: 11, color: SRG_GREY, border: `1px solid ${SRG_BORDER}` }
             },
               React.createElement("span", { style: { fontWeight: 700, color: SRG_DARK } }, "Shift Codes: "),
-              "DS = Day Shift, NS = Night Shift. Three phases: Pre-Shut (25 May\u20135 Jun), Shutdown (6\u201318 Jun), Post-Shut (19\u201321 Jun). Source: Tronox Major Shutdown Workforce Plan \u2014 SRG Global."
+              "DS = Day Shift, NS = Night Shift. Tronox May Major Shutdown \u2014 5 days (18\u201322 May 2026). Source: Rapid Crews planner \u2014 SRG Global."
             )
           ),
 
@@ -1065,7 +1059,7 @@
                       color: SRG_GREY,
                       marginTop: 4
                     }
-                  }, "Tronox Major Shutdown 2026")
+                  }, "Tronox May Major Shutdown · 18–22 May 2026")
                 ),
 
                 React.createElement("button", {
@@ -1271,7 +1265,7 @@
                   }
                 }, "Summary Notes"),
                 React.createElement("div", null,
-                  "Tronox Major Shutdown. Three phases: Pre-Shut (25 May–5 Jun), Shutdown (6–18 Jun), Post-Shut (19–21 Jun). Peak manning: 22 day / 14 night = 36 on site. Requirements: All Fitters, TAs and Riggers to be CSE trained. All tradespersons to have WAH tickets. 50% of Fitters and TAs to be BA trained. 50% of Fitters to have rigging tickets. All positions currently TBC — personnel to be confirmed."
+                  "Tronox May Major Shutdown — 5-day mechanical shut, 18–22 May 2026 (Mon–Fri). Job #1353, South West — Scheduling Owner: Rogerson, Kirsten. Planned manning: 104 positions (59 day / 45 night). Trade split: Supervisor - Mechanical (4), Boilermaker (10), Coded Welder (10), Mechanical Fitter (40), Rigger - Advanced (10), Rigger - Intermediate (10), Trade Assistant (20). Requirements: All Fitters, TAs and Riggers to be CSE trained. All tradespersons to have WAH tickets. 50% of Fitters and TAs to be BA trained. 50% of Fitters to have rigging tickets. All positions currently TBC — personnel to be confirmed."
                 )
               )
             )
@@ -1293,7 +1287,7 @@
             }
           },
             React.createElement("span", null, "SRG Global Integrated Services Pty Ltd · ABN 86 604 010 639"),
-            React.createElement("span", null, `Generated ${new Date().toLocaleDateString("en-AU")} · Tronox Major Shutdown 2026`)
+            React.createElement("span", null, `Generated ${new Date().toLocaleDateString("en-AU")} · Tronox May Major Shutdown · 18–22 May 2026`)
           )
         )
       );
