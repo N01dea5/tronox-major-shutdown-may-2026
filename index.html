@@ -127,7 +127,7 @@
       ["GARDINER, Edward",           "Mechanical Fitter",       "Day"],
       ["GARDINER, James",            "Mechanical Fitter",       "Day"],
       ["GILCHRIST, Sharon",          "Trade Assistant",         "Day"],
-      ["GRAINGER-ROUSSEAU, M.",      "Mechanical Fitter",       "Day"],
+      ["GRAINGER-ROUSSEAU, Malcolm", "Mechanical Fitter",       "Day"],
       ["GUENDESLI, Mustafa",         "Mechanical Fitter",       "Day"],
       ["GUMMOW, Glenn",              "Coded Welder",            "Day"],
       ["HARRIS, Robert",             "Trade Assistant",         "Day"],
@@ -193,27 +193,106 @@
       ["NGUYEN, Gabriel",            "Trade Assistant",         "Night"],
       ["RAFFAELE, Roberto",          "Trade Assistant",         "Night"],
       ["RATAHI, Hemi",               "Rigger - Advanced",       "Night"],
-      ["REID, Isaac",                "Trade Assistant",         "Night"],
+      ["REID, Issac",                "Trade Assistant",         "Night"],
       ["SANCHEZ, Renan",             "Mechanical Fitter",       "Night"],
       ["SARTI, Federico",            "Trade Assistant",         "Night"],
       ["SINGH, Gurshwinder",         "Mechanical Fitter",       "Night"],
       ["SOSA, Lucrecia Celeste",     "Rigger - Intermediate",   "Night"],
       ["THOMPSON, William",          "Trade Assistant",         "Night"],
       ["TIAMSON, Melvin",            "Boilermaker",             "Night"],
-      ["USORE, Nooni",               "Mechanical Fitter",       "Night"],
+      ["USORE, Ngoni",               "Mechanical Fitter",       "Night"],
       ["VAN DER ZANDEN, Julian",     "Rigger - Intermediate",   "Night"],
       ["WANGLER, Graham",            "Mechanical Fitter",       "Night"],
       ["WITHERS, Beau",              "Trade Assistant",         "Night"]
     ];
 
-    const E = CREW.map(([name, role, shift], i) => ({
-      id: i + 1,
-      name, role, shift, days: 5, group: role,
-      ty: 0, sy: 0,
-      cse: false, wah: false, ewp: false, ba: false, fork: false,
-      hr: false, dog: false, rig: "", gta: false, fa: false,
-      sum: `${shift} shift ${role.toLowerCase()} — 5-day Tronox May Major shutdown (18–22 May 2026).`
-    }));
+    // Ticket overlay keyed by "SURNAME, FirstName". HRW licence codes map as:
+    //   DG → dog, WP → ewp, LF → fork, RA/RI/RB → rig ("Advanced"/"Intermediate"/"Basic"),
+    //   C0/C6/CN/SB/SI → recorded in extras only (no dedicated column).
+    // Drivers licence: HR → hr, otherwise ignored. AOD / CSE / WAH / BA / GTA / FA not
+    // yet supplied — defaults to false. `newhire:true` flags first-time SRG mobilisation.
+    const TICKETS = {
+      // --- Night ---
+      "ADAMS, Jamie":               { mobile: "0436 486 524", drivers: "C", newhire: true },
+      "WANGLER, Graham":            { mobile: "0476247673",   dog: true, drivers: "C" },
+      "TIAMSON, Melvin":            { mobile: "0429 525 137", ewp: true },
+      "SINGH, Gurshwinder":         { mobile: "0431 100 007", fork: true, ewp: true },
+      "USORE, Ngoni":               { mobile: "0401 500 098", ewp: true, drivers: "C" },
+      "MUKUNGA, Herbert":           { mobile: "0459183602",   ewp: true, drivers: "HR" },
+      "SANCHEZ, Renan":             { mobile: "0431 951 293", ewp: true },
+      "ANADIF, Omar":               { mobile: "0407 636 408", fork: true, ewp: true, drivers: "C", newhire: true },
+      "RATAHI, Hemi":               { mobile: "0457 420 744", fork: true, ewp: true, rig: "Advanced", drivers: "HR", extras: "C0, C6, SB, SI" },
+      "FERNANDES, Luis":            { mobile: "0424 476 507", dog: true, rig: "Intermediate" },
+      "THOMPSON, William":          { mobile: "0429 331 817", drivers: "HR" },
+      "DILENA, Jessica":            { mobile: "0477841414",   ewp: true, drivers: "C-A" },
+      "SARTI, Federico":            { mobile: "0493 955 585", drivers: "HR" },
+      "MONDESIR, Lea":              { mobile: "0436 652 133" },
+      "BENDANI, Mehdi":             { mobile: "0493 536 751", drivers: "C", newhire: true },
+      "WITHERS, Beau":              { mobile: "0435 441 418" },
+      "REID, Issac":                { mobile: "0428969952" },
+      "NGUYEN, Gabriel":            { mobile: "0448 737 990" },
+      "RAFFAELE, Roberto":          { mobile: "0419 949 242", fork: true, drivers: "C" },
+      "GARCIA, King":               { mobile: "0498 054 425" },
+      "SOSA, Lucrecia Celeste":     { mobile: "0401 023 205", dog: true, fork: true, rig: "Intermediate", ewp: true, drivers: "C", newhire: true },
+      "VAN DER ZANDEN, Julian":     { mobile: "0433 449 381", dog: true, fork: true, rig: "Intermediate", drivers: "C" },
+      // --- Day ---
+      "DUNN, Cameron":              { mobile: "0499 485 946" },
+      "SILLIS, Daniel":             { mobile: "0449 125 720", dog: true, rig: "Intermediate" },
+      "KIM, Chaeyoon":              { mobile: "0419 549 708", dog: true, fork: true, rig: "Intermediate", ewp: true },
+      "FAVA, Willy":                { mobile: "0481 092 939" },
+      "NDENGA, Naomi":              { mobile: "0472586919" },
+      "KARIKIS, Stefanos":          { mobile: "0403 267 784", dog: true, drivers: "C" },
+      "GILCHRIST, Sharon":          { mobile: "0417 096 745", fork: true, ewp: true, drivers: "HR" },
+      "HERNANDEZ, Jaime":           { mobile: "0499 422 603" },
+      "MONNET, Lise":               { mobile: "0427 753 796", ewp: true },
+      "LYON, Barry":                { mobile: "0438 555 069", ewp: true },
+      "JEFFERY, Jacinta":           { mobile: "0428 238 866", ewp: true },
+      "MENDIVIL, Jeremias":         { mobile: "0433 197 500", fork: true, drivers: "C" },
+      "FRONGILLO, Robert":          { mobile: "0404 632 455", drivers: "C" },
+      "CHITTY, Russell":            { mobile: "0435 052 151", dog: true, rig: "Advanced" },
+      "DACK, Joe":                  { mobile: "0449 995 304", dog: true, rig: "Intermediate" },
+      "BURNS, Peter":               { mobile: "0437 183 009" },
+      "GRAINGER-ROUSSEAU, Malcolm": { mobile: "0487 104 895", fork: true },
+      "DOBBELAERE, Mitya":          { mobile: "0447 582 473", drivers: "C" },
+      "ABHINAV, Abhinav":           { mobile: "0424848290",   drivers: "HR" },
+      "GARDINER, Edward":           { mobile: "0457 470 330" },
+      "THANGARASU, Prabhakaran":    { mobile: "0434 916 762", drivers: "C", newhire: true },
+      "MOHAMED, Abdikadir":         { mobile: "0478 161 027", drivers: "C", newhire: true },
+      "DORUGADE, Omkar Uttam":      { mobile: "0424804281" },
+      "FORREST, Wayne":             { mobile: "0438 101 966", ewp: true },
+      "JAMES, Darren":              { mobile: "0432 522 247" }
+    };
+
+    const E = CREW.map(([name, role, shift], i) => {
+      const t = TICKETS[name] || {};
+      const bits = [];
+      if (t.mobile) bits.push(`Mobile ${t.mobile}`);
+      if (t.newhire) bits.push("new hire (first SRG mobilisation)");
+      if (t.extras) bits.push(`also holds ${t.extras}`);
+      const detail = bits.length ? " " + bits.join(" · ") + "." : "";
+      const hasAnyTicket = !!(t.dog || t.fork || t.rig || t.ewp || t.drivers === "HR");
+      const base = hasAnyTicket
+        ? `${shift} shift ${role.toLowerCase()} — tickets per Rapid Crews records.`
+        : `${shift} shift ${role.toLowerCase()} — 5-day Tronox May Major shutdown.`;
+      return {
+        id: i + 1,
+        name, role, shift, days: 5, group: role,
+        ty: 0, sy: 0,
+        cse: false,
+        wah: false,
+        ewp: !!t.ewp,
+        ba: false,
+        fork: !!t.fork,
+        hr: t.drivers === "HR",
+        dog: !!t.dog,
+        rig: t.rig || "",
+        gta: false,
+        fa: false,
+        mobile: t.mobile || "",
+        newhire: !!t.newhire,
+        sum: base + detail
+      };
+    });
 
     const DATES = ["18 May","19 May","20 May","21 May","22 May"];
     const DOW   = ["Mon","Tue","Wed","Thu","Fri"];
