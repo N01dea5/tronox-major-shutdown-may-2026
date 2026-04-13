@@ -93,59 +93,89 @@
       }
     };
 
-    // Confirmed crew per Rapid Crews planner — Job #1353 Tronox May Major, 18–22 May 2026.
-    // Columns: [name, role/group, shift]. Ticket details live in the TICKETS overlay below.
+    // Planned demand per Rapid Crews planner (Job #1353, Tronox May Major, 18–22 May 2026):
+    //   Supervisor - Mechanical  4 day / 0 night
+    //   Boilermaker              5 day / 5 night
+    //   Coded Welder            10 day / 0 night
+    //   Mechanical Fitter       20 day / 20 night
+    //   Rigger - Advanced        5 day / 5 night
+    //   Rigger - Intermediate    5 day / 5 night
+    //   Trade Assistant         10 day / 10 night
+    //                          --------------------
+    //                           59 day / 45 night = 104 planned positions.
+    // 47 named personnel are currently confirmed; the remaining 57 slots are "TBC".
+    const tbc = (n, role, shift) => Array.from({ length: n }, () => ["TBC", role, shift]);
     const CREW = [
-      // --- DAY SHIFT (25) ---
-      ["ABHINAV, Abhinav",           "Mechanical Fitter",       "Day"],
-      ["BURNS, Peter",               "Supervisor - Mechanical", "Day"],
-      ["CHITTY, Russell",            "Rigger - Advanced",       "Day"],
-      ["DACK, Joe",                  "Rigger - Advanced",       "Day"],
-      ["DOBBELAERE, Mitya",          "Mechanical Fitter",       "Day"],
-      ["DORUGADE, Omkar Uttam",      "Mechanical Fitter",       "Day"],
-      ["DUNN, Cameron",              "Coded Welder",            "Day"],
-      ["FAVA, Willy",                "Trade Assistant",         "Day"],
-      ["FORREST, Wayne",             "Mechanical Fitter",       "Day"],
-      ["FRONGILLO, Robert",          "Trade Assistant",         "Day"],
-      ["GARDINER, Edward",           "Mechanical Fitter",       "Day"],
-      ["GILCHRIST, Sharon",          "Trade Assistant",         "Day"],
-      ["GRAINGER-ROUSSEAU, Malcolm", "Mechanical Fitter",       "Day"],
-      ["HERNANDEZ, Jaime",           "Trade Assistant",         "Day"],
-      ["JAMES, Darren",              "Mechanical Fitter",       "Day"],
-      ["JEFFERY, Jacinta",           "Trade Assistant",         "Day"],
-      ["KARIKIS, Stefanos",          "Trade Assistant",         "Day"],
-      ["KIM, Chaeyoon",              "Rigger - Intermediate",   "Day"],
-      ["LYON, Barry",                "Trade Assistant",         "Day"],
-      ["MENDIVIL, Jeremias",         "Trade Assistant",         "Day"],
-      ["MOHAMED, Abdikadir",         "Mechanical Fitter",       "Day"],
-      ["MONNET, Lise",               "Trade Assistant",         "Day"],
-      ["NDENGA, Naomi",              "Trade Assistant",         "Day"],
-      ["SILLIS, Daniel",             "Rigger - Intermediate",   "Day"],
-      ["THANGARASU, Prabhakaran",    "Mechanical Fitter",       "Day"],
+      // Supervisor - Mechanical — 4 day (1 confirmed, 3 TBC)
+      ["BURNS, Peter",                 "Supervisor - Mechanical", "Day"],
+      ...tbc(3,                        "Supervisor - Mechanical", "Day"),
 
-      // --- NIGHT SHIFT (22) ---
-      ["ADAMS, Jamie",               "Mechanical Fitter",       "Night"],
-      ["ANADIF, Omar",               "Mechanical Fitter",       "Night"],
-      ["BENDANI, Mehdi",             "Trade Assistant",         "Night"],
-      ["DILENA, Jessica",            "Trade Assistant",         "Night"],
-      ["FERNANDES, Luis",            "Rigger - Advanced",       "Night"],
-      ["GARCIA, King",               "Trade Assistant",         "Night"],
-      ["MONDESIR, Lea",              "Trade Assistant",         "Night"],
-      ["MUKUNGA, Herbert",           "Mechanical Fitter",       "Night"],
-      ["NGUYEN, Gabriel",            "Trade Assistant",         "Night"],
-      ["RAFFAELE, Roberto",          "Trade Assistant",         "Night"],
-      ["RATAHI, Hemi",               "Rigger - Advanced",       "Night"],
-      ["REID, Issac",                "Trade Assistant",         "Night"],
-      ["SANCHEZ, Renan",             "Mechanical Fitter",       "Night"],
-      ["SARTI, Federico",            "Trade Assistant",         "Night"],
-      ["SINGH, Gurshwinder",         "Mechanical Fitter",       "Night"],
-      ["SOSA, Lucrecia Celeste",     "Rigger - Intermediate",   "Night"],
-      ["THOMPSON, William",          "Trade Assistant",         "Night"],
-      ["TIAMSON, Melvin",            "Boilermaker",             "Night"],
-      ["USORE, Ngoni",               "Mechanical Fitter",       "Night"],
-      ["VAN DER ZANDEN, Julian",     "Rigger - Intermediate",   "Night"],
-      ["WANGLER, Graham",            "Mechanical Fitter",       "Night"],
-      ["WITHERS, Beau",              "Trade Assistant",         "Night"]
+      // Boilermaker — 5 day (0 / 5) · 5 night (1 / 4)
+      ...tbc(5,                        "Boilermaker",             "Day"),
+      ["TIAMSON, Melvin",              "Boilermaker",             "Night"],
+      ...tbc(4,                        "Boilermaker",             "Night"),
+
+      // Coded Welder — 10 day (1 / 9)
+      ["DUNN, Cameron",                "Coded Welder",            "Day"],
+      ...tbc(9,                        "Coded Welder",            "Day"),
+
+      // Mechanical Fitter — 20 day (9 / 11) · 20 night (7 / 13)
+      ["ABHINAV, Abhinav",             "Mechanical Fitter",       "Day"],
+      ["DOBBELAERE, Mitya",            "Mechanical Fitter",       "Day"],
+      ["DORUGADE, Omkar Uttam",        "Mechanical Fitter",       "Day"],
+      ["FORREST, Wayne",               "Mechanical Fitter",       "Day"],
+      ["GARDINER, Edward",             "Mechanical Fitter",       "Day"],
+      ["GRAINGER-ROUSSEAU, Malcolm",   "Mechanical Fitter",       "Day"],
+      ["JAMES, Darren",                "Mechanical Fitter",       "Day"],
+      ["MOHAMED, Abdikadir",           "Mechanical Fitter",       "Day"],
+      ["THANGARASU, Prabhakaran",      "Mechanical Fitter",       "Day"],
+      ...tbc(11,                       "Mechanical Fitter",       "Day"),
+      ["ADAMS, Jamie",                 "Mechanical Fitter",       "Night"],
+      ["ANADIF, Omar",                 "Mechanical Fitter",       "Night"],
+      ["MUKUNGA, Herbert",             "Mechanical Fitter",       "Night"],
+      ["SANCHEZ, Renan",               "Mechanical Fitter",       "Night"],
+      ["SINGH, Gurshwinder",           "Mechanical Fitter",       "Night"],
+      ["USORE, Ngoni",                 "Mechanical Fitter",       "Night"],
+      ["WANGLER, Graham",              "Mechanical Fitter",       "Night"],
+      ...tbc(13,                       "Mechanical Fitter",       "Night"),
+
+      // Rigger - Advanced — 5 day (2 / 3) · 5 night (2 / 3)
+      ["CHITTY, Russell",              "Rigger - Advanced",       "Day"],
+      ["DACK, Joe",                    "Rigger - Advanced",       "Day"],
+      ...tbc(3,                        "Rigger - Advanced",       "Day"),
+      ["FERNANDES, Luis",              "Rigger - Advanced",       "Night"],
+      ["RATAHI, Hemi",                 "Rigger - Advanced",       "Night"],
+      ...tbc(3,                        "Rigger - Advanced",       "Night"),
+
+      // Rigger - Intermediate — 5 day (2 / 3) · 5 night (2 / 3)
+      ["KIM, Chaeyoon",                "Rigger - Intermediate",   "Day"],
+      ["SILLIS, Daniel",               "Rigger - Intermediate",   "Day"],
+      ...tbc(3,                        "Rigger - Intermediate",   "Day"),
+      ["SOSA, Lucrecia Celeste",       "Rigger - Intermediate",   "Night"],
+      ["VAN DER ZANDEN, Julian",       "Rigger - Intermediate",   "Night"],
+      ...tbc(3,                        "Rigger - Intermediate",   "Night"),
+
+      // Trade Assistant — 10 day (10 / 0) · 10 night (10 / 0)
+      ["FAVA, Willy",                  "Trade Assistant",         "Day"],
+      ["FRONGILLO, Robert",            "Trade Assistant",         "Day"],
+      ["GILCHRIST, Sharon",            "Trade Assistant",         "Day"],
+      ["HERNANDEZ, Jaime",             "Trade Assistant",         "Day"],
+      ["JEFFERY, Jacinta",             "Trade Assistant",         "Day"],
+      ["KARIKIS, Stefanos",            "Trade Assistant",         "Day"],
+      ["LYON, Barry",                  "Trade Assistant",         "Day"],
+      ["MENDIVIL, Jeremias",           "Trade Assistant",         "Day"],
+      ["MONNET, Lise",                 "Trade Assistant",         "Day"],
+      ["NDENGA, Naomi",                "Trade Assistant",         "Day"],
+      ["BENDANI, Mehdi",               "Trade Assistant",         "Night"],
+      ["DILENA, Jessica",              "Trade Assistant",         "Night"],
+      ["GARCIA, King",                 "Trade Assistant",         "Night"],
+      ["MONDESIR, Lea",                "Trade Assistant",         "Night"],
+      ["NGUYEN, Gabriel",              "Trade Assistant",         "Night"],
+      ["RAFFAELE, Roberto",            "Trade Assistant",         "Night"],
+      ["REID, Issac",                  "Trade Assistant",         "Night"],
+      ["SARTI, Federico",              "Trade Assistant",         "Night"],
+      ["THOMPSON, William",            "Trade Assistant",         "Night"],
+      ["WITHERS, Beau",                "Trade Assistant",         "Night"]
     ];
 
     // Ticket overlay keyed by "SURNAME, FirstName". HRW licence codes map as:
@@ -551,7 +581,7 @@
 
             React.createElement("div", {
               style: { marginTop: -8, marginBottom: 24, fontSize: 11, color: SRG_GREY, fontStyle: "italic" }
-            }, "Tronox May Major Shutdown — 5-day mechanical shut, 18\u201322 May 2026 (Mon\u2013Fri). Confirmed crew: 47 (25 day / 22 night). Requirements: CSE for Fitters / TAs / Riggers, WAH for all trades, 50% BA for Fitters / TAs, 50% Rigging for Fitters. Job #1353, South West \u2014 Scheduling Owner: Rogerson, Kirsten."),
+            }, "Tronox May Major Shutdown — 5-day mechanical shut, 18\u201322 May 2026 (Mon\u2013Fri). Planned 104 positions (59 day / 45 night); 47 confirmed, 57 still TBC. Requirements: CSE for Fitters / TAs / Riggers, WAH for all trades, 50% BA for Fitters / TAs, 50% Rigging for Fitters. Job #1353, South West \u2014 Scheduling Owner: Rogerson, Kirsten."),
 
             React.createElement("div", {
               style: { background: "white", boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}`, overflow: "auto", marginBottom: 24 }
@@ -1344,7 +1374,7 @@
                   }
                 }, "Summary Notes"),
                 React.createElement("div", null,
-                  "Tronox May Major Shutdown — 5-day mechanical shut, 18–22 May 2026 (Mon–Fri). Job #1353, South West — Scheduling Owner: Rogerson, Kirsten. Confirmed crew: 47 personnel (25 day / 22 night). Trade split: Supervisor - Mechanical (1 day), Boilermaker (1 night), Coded Welder (1 day), Mechanical Fitter (9 day / 7 night), Rigger - Advanced (2 day / 2 night), Rigger - Intermediate (2 day / 2 night), Trade Assistant (10 day / 10 night). Requirements: All Fitters, TAs and Riggers to be CSE trained. All tradespersons to have WAH tickets. 50% of Fitters and TAs to be BA trained. 50% of Fitters to have rigging tickets. CSE / WAH / BA / GTA / FA tickets still to be loaded against named personnel."
+                  "Tronox May Major Shutdown — 5-day mechanical shut, 18–22 May 2026 (Mon–Fri). Job #1353, South West — Scheduling Owner: Rogerson, Kirsten. Planned demand: 104 positions (59 day / 45 night) — Supervisor - Mechanical 4 day, Boilermaker 5 day / 5 night, Coded Welder 10 day, Mechanical Fitter 20 day / 20 night, Rigger - Advanced 5 day / 5 night, Rigger - Intermediate 5 day / 5 night, Trade Assistant 10 day / 10 night. Confirmed to date: 47 personnel (25 day / 22 night); 57 positions still TBC — Trade Assistant fully covered, gaps remain in every other trade. Requirements: All Fitters, TAs and Riggers to be CSE trained. All tradespersons to have WAH tickets. 50% of Fitters and TAs to be BA trained. 50% of Fitters to have rigging tickets. CSE / WAH / BA / GTA / FA tickets still to be loaded against named personnel."
                 )
               )
             )
