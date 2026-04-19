@@ -103,41 +103,46 @@
     //   Trade Assistant         10 day / 10 night
     //                          --------------------
     //                           59 day / 45 night = 104 planned positions.
-    // 47 named personnel are currently confirmed; the remaining 57 slots are "TBC".
+    //   + 1 extra Night Coded Welder (confirmed beyond original demand) = 105 total.
+    // 48 named personnel confirmed (roster update 19/04/2026); 57 TBC.
     const tbc = (n, role, shift) => Array.from({ length: n }, () => ["TBC", role, shift]);
     const CREW = [
-      // Supervisor - Mechanical — 4 day (1 confirmed, 3 TBC)
+      // Supervisor - Mechanical — 4 day (3 confirmed, 1 TBC)
+      // RILEY (Superintendent) and SMITH (Site Coordinator) mapped here.
       ["BURNS, Peter",                 "Supervisor - Mechanical", "Day"],
-      ...tbc(3,                        "Supervisor - Mechanical", "Day"),
+      ["RILEY, Adam",                  "Supervisor - Mechanical", "Day"],
+      ["SMITH, Anthony",               "Supervisor - Mechanical", "Day"],
+      ...tbc(1,                        "Supervisor - Mechanical", "Day"),
 
-      // Boilermaker — 5 day (0 / 5) · 5 night (1 / 4)
-      ...tbc(5,                        "Boilermaker",             "Day"),
+      // Boilermaker — 5 day (1 / 4) · 5 night (1 / 4)
+      ["MENDY, Mathias",               "Boilermaker",             "Day"],
+      ...tbc(4,                        "Boilermaker",             "Day"),
       ["TIAMSON, Melvin",              "Boilermaker",             "Night"],
       ...tbc(4,                        "Boilermaker",             "Night"),
 
-      // Coded Welder — 10 day (1 / 9)
-      ["DUNN, Cameron",                "Coded Welder",            "Day"],
-      ...tbc(9,                        "Coded Welder",            "Day"),
+      // Coded Welder — 10 day (0 / 10) · 1 night (1 extra beyond demand)
+      ...tbc(10,                       "Coded Welder",            "Day"),
+      ["RISCHIA, Mirko",               "Coded Welder",            "Night"],
 
-      // Mechanical Fitter — 20 day (9 / 11) · 20 night (7 / 13)
+      // Mechanical Fitter — 20 day (10 / 10) · 20 night (6 / 14)
       ["ABHINAV, Abhinav",             "Mechanical Fitter",       "Day"],
       ["DOBBELAERE, Mitya",            "Mechanical Fitter",       "Day"],
       ["DORUGADE, Omkar Uttam",        "Mechanical Fitter",       "Day"],
       ["FORREST, Wayne",               "Mechanical Fitter",       "Day"],
       ["GARDINER, Edward",             "Mechanical Fitter",       "Day"],
       ["GRAINGER-ROUSSEAU, Malcolm",   "Mechanical Fitter",       "Day"],
+      ["HANCOCK, John",                "Mechanical Fitter",       "Day"],
       ["JAMES, Darren",                "Mechanical Fitter",       "Day"],
       ["MOHAMED, Abdikadir",           "Mechanical Fitter",       "Day"],
       ["THANGARASU, Prabhakaran",      "Mechanical Fitter",       "Day"],
-      ...tbc(11,                       "Mechanical Fitter",       "Day"),
-      ["ADAMS, Jamie",                 "Mechanical Fitter",       "Night"],
+      ...tbc(10,                       "Mechanical Fitter",       "Day"),
       ["ANADIF, Omar",                 "Mechanical Fitter",       "Night"],
+      ["GANGEMI, Jake",                "Mechanical Fitter",       "Night"],
       ["MUKUNGA, Herbert",             "Mechanical Fitter",       "Night"],
-      ["SANCHEZ, Renan",               "Mechanical Fitter",       "Night"],
       ["SINGH, Gurshwinder",           "Mechanical Fitter",       "Night"],
       ["USORE, Ngoni",                 "Mechanical Fitter",       "Night"],
       ["WANGLER, Graham",              "Mechanical Fitter",       "Night"],
-      ...tbc(13,                       "Mechanical Fitter",       "Night"),
+      ...tbc(14,                       "Mechanical Fitter",       "Night"),
 
       // Rigger - Advanced — 5 day (2 / 3) · 5 night (2 / 3)
       ["CHITTY, Russell",              "Rigger - Advanced",       "Day"],
@@ -147,17 +152,14 @@
       ["RATAHI, Hemi",                 "Rigger - Advanced",       "Night"],
       ...tbc(3,                        "Rigger - Advanced",       "Night"),
 
-      // Rigger - Intermediate — 5 day (2 / 3) · 5 night (2 / 3)
-      ["KIM, Chaeyoon",                "Rigger - Intermediate",   "Day"],
+      // Rigger - Intermediate — 5 day (1 / 4) · 5 night (2 / 3)
       ["SILLIS, Daniel",               "Rigger - Intermediate",   "Day"],
-      ...tbc(3,                        "Rigger - Intermediate",   "Day"),
+      ...tbc(4,                        "Rigger - Intermediate",   "Day"),
       ["SOSA, Lucrecia Celeste",       "Rigger - Intermediate",   "Night"],
       ["VAN DER ZANDEN, Julian",       "Rigger - Intermediate",   "Night"],
       ...tbc(3,                        "Rigger - Intermediate",   "Night"),
 
-      // Trade Assistant — 10 day (10 / 0) · 10 night (10 / 0)
-      ["FAVA, Willy",                  "Trade Assistant",         "Day"],
-      ["FRONGILLO, Robert",            "Trade Assistant",         "Day"],
+      // Trade Assistant — 10 day (9 / 1) · 10 night (10 / 0)
       ["GILCHRIST, Sharon",            "Trade Assistant",         "Day"],
       ["HERNANDEZ, Jaime",             "Trade Assistant",         "Day"],
       ["JEFFERY, Jacinta",             "Trade Assistant",         "Day"],
@@ -166,6 +168,8 @@
       ["MENDIVIL, Jeremias",           "Trade Assistant",         "Day"],
       ["MONNET, Lise",                 "Trade Assistant",         "Day"],
       ["NDENGA, Naomi",                "Trade Assistant",         "Day"],
+      ["TRAORE, Eleonora",             "Trade Assistant",         "Day"],
+      ...tbc(1,                        "Trade Assistant",         "Day"),
       ["BENDANI, Mehdi",               "Trade Assistant",         "Night"],
       ["DILENA, Jessica",              "Trade Assistant",         "Night"],
       ["GARCIA, King",                 "Trade Assistant",         "Night"],
@@ -181,59 +185,58 @@
     // Ticket overlay keyed by "SURNAME, FirstName". HRW licence codes map as:
     //   DG → dog, WP → ewp, LF → fork, RA/RI/RB → rig ("Advanced"/"Intermediate"/"Basic"),
     //   C0/C6/CN/SB/SI → recorded in extras only (no dedicated column).
-    // Drivers licence: HR → hr, otherwise ignored. AOD / CSE / WAH / BA / GTA / FA not
-    // yet supplied — defaults to false. `newhire:true` flags first-time SRG mobilisation.
-    // Mobile numbers intentionally not stored here.
+    // Drivers licence: HR → hr, otherwise ignored.
     const TICKETS = {
       // --- Night ---
-      "ADAMS, Jamie":               { drivers: "C", newhire: true },
       "WANGLER, Graham":            { dog: true, drivers: "C" },
       "TIAMSON, Melvin":            { ewp: true },
-      "SINGH, Gurshwinder":         { fork: true, ewp: true },
+      "GANGEMI, Jake":              { dog: true, fork: true, ewp: true, drivers: "C", newhire: true, extras: "CN" },
       "USORE, Ngoni":               { ewp: true, drivers: "C" },
       "MUKUNGA, Herbert":           { ewp: true, drivers: "HR" },
-      "SANCHEZ, Renan":             { ewp: true },
+      "SINGH, Gurshwinder":         { fork: true, ewp: true },
       "ANADIF, Omar":               { fork: true, ewp: true, drivers: "C", newhire: true },
       "RATAHI, Hemi":               { fork: true, ewp: true, rig: "Advanced", drivers: "HR", extras: "C0, C6, SB, SI" },
       "FERNANDES, Luis":            { dog: true, rig: "Intermediate" },
-      "THOMPSON, William":          { drivers: "HR" },
-      "DILENA, Jessica":            { ewp: true, drivers: "C-A" },
-      "SARTI, Federico":            { drivers: "HR" },
       "MONDESIR, Lea":              {},
-      "BENDANI, Mehdi":             { drivers: "C", newhire: true },
-      "WITHERS, Beau":              {},
-      "REID, Issac":                {},
-      "NGUYEN, Gabriel":            {},
       "RAFFAELE, Roberto":          { fork: true, drivers: "C" },
       "GARCIA, King":               {},
+      "DILENA, Jessica":            { ewp: true, drivers: "C-A" },
+      "SARTI, Federico":            { drivers: "HR" },
+      "REID, Issac":                {},
+      "THOMPSON, William":          { drivers: "HR" },
+      "NGUYEN, Gabriel":            {},
+      "BENDANI, Mehdi":             { drivers: "C", newhire: true },
+      "WITHERS, Beau":              {},
       "SOSA, Lucrecia Celeste":     { dog: true, fork: true, rig: "Intermediate", ewp: true, drivers: "C", newhire: true },
+      "RISCHIA, Mirko":             { drivers: "C", newhire: true },
       "VAN DER ZANDEN, Julian":     { dog: true, fork: true, rig: "Intermediate", drivers: "C" },
       // --- Day ---
-      "DUNN, Cameron":              {},
+      "RILEY, Adam":                { drivers: "C" },
+      "SMITH, Anthony":             { newhire: true },
       "SILLIS, Daniel":             { dog: true, rig: "Intermediate" },
-      "KIM, Chaeyoon":              { dog: true, fork: true, rig: "Intermediate", ewp: true },
-      "FAVA, Willy":                {},
-      "NDENGA, Naomi":              {},
+      "MENDIVIL, Jeremias":         { fork: true, drivers: "C" },
       "KARIKIS, Stefanos":          { dog: true, drivers: "C" },
       "GILCHRIST, Sharon":          { fork: true, ewp: true, drivers: "HR" },
+      "NDENGA, Naomi":              {},
       "HERNANDEZ, Jaime":           {},
       "MONNET, Lise":               { ewp: true },
       "LYON, Barry":                { ewp: true },
       "JEFFERY, Jacinta":           { ewp: true },
-      "MENDIVIL, Jeremias":         { fork: true, drivers: "C" },
-      "FRONGILLO, Robert":          { drivers: "C" },
+      "TRAORE, Eleonora":           { ewp: true },
       "CHITTY, Russell":            { dog: true, rig: "Advanced" },
       "DACK, Joe":                  { dog: true, rig: "Intermediate" },
       "BURNS, Peter":               {},
       "GRAINGER-ROUSSEAU, Malcolm": { fork: true },
-      "DOBBELAERE, Mitya":          { drivers: "C" },
-      "ABHINAV, Abhinav":           { drivers: "HR" },
       "GARDINER, Edward":           {},
       "THANGARASU, Prabhakaran":    { drivers: "C", newhire: true },
       "MOHAMED, Abdikadir":         { drivers: "C", newhire: true },
+      "DOBBELAERE, Mitya":          { drivers: "C" },
       "DORUGADE, Omkar Uttam":      {},
       "FORREST, Wayne":             { ewp: true },
-      "JAMES, Darren":              {}
+      "ABHINAV, Abhinav":           { drivers: "HR" },
+      "HANCOCK, John":              { ewp: true },
+      "JAMES, Darren":              {},
+      "MENDY, Mathias":             { dog: true, fork: true, rig: "Basic", ewp: true, drivers: "C", extras: "SI" }
     };
 
     const E = CREW.map(([name, role, shift], i) => {
@@ -581,7 +584,7 @@
 
             React.createElement("div", {
               style: { marginTop: -8, marginBottom: 24, fontSize: 11, color: SRG_GREY, fontStyle: "italic" }
-            }, "Tronox May Major Shutdown — 5-day mechanical shut, 18\u201322 May 2026 (Mon\u2013Fri). Planned 104 positions (59 day / 45 night); 47 confirmed, 57 still TBC. Requirements: CSE for Fitters / TAs / Riggers, WAH for all trades, 50% BA for Fitters / TAs, 50% Rigging for Fitters. Job #1353, South West \u2014 Scheduling Owner: Rogerson, Kirsten."),
+            }, "Tronox May Major Shutdown — 5-day mechanical shut, 18\u201322 May 2026 (Mon\u2013Fri). Planned 104 positions (59 day / 45 night) + 1 extra Night CW; 48 confirmed, 57 TBC. Requirements: CSE for Fitters / TAs / Riggers, WAH for all trades, 50% BA for Fitters / TAs, 50% Rigging for Fitters. Job #1353, South West \u2014 Scheduling Owner: Rogerson, Kirsten."),
 
             React.createElement("div", {
               style: { background: "white", boxShadow: "0 1px 2px rgba(0,0,0,0.04)", border: `1px solid ${SRG_BORDER}`, overflow: "auto", marginBottom: 24 }
@@ -1374,7 +1377,7 @@
                   }
                 }, "Summary Notes"),
                 React.createElement("div", null,
-                  "Tronox May Major Shutdown — 5-day mechanical shut, 18–22 May 2026 (Mon–Fri). Job #1353, South West — Scheduling Owner: Rogerson, Kirsten. Planned demand: 104 positions (59 day / 45 night) — Supervisor - Mechanical 4 day, Boilermaker 5 day / 5 night, Coded Welder 10 day, Mechanical Fitter 20 day / 20 night, Rigger - Advanced 5 day / 5 night, Rigger - Intermediate 5 day / 5 night, Trade Assistant 10 day / 10 night. Confirmed to date: 47 personnel (25 day / 22 night); 57 positions still TBC — Trade Assistant fully covered, gaps remain in every other trade. Requirements: All Fitters, TAs and Riggers to be CSE trained. All tradespersons to have WAH tickets. 50% of Fitters and TAs to be BA trained. 50% of Fitters to have rigging tickets. CSE / WAH / BA / GTA / FA tickets still to be loaded against named personnel."
+                  "Tronox May Major Shutdown — 5-day mechanical shut, 18–22 May 2026 (Mon–Fri). Job #1353, South West — Scheduling Owner: Rogerson, Kirsten. Planned demand: 104 positions (59 day / 45 night) + 1 extra Night Coded Welder. Confirmed to date: 48 personnel (26 day / 22 night); 57 positions still TBC. Trade Assistant fully covered; gaps remain across other trades. Requirements: All Fitters, TAs and Riggers to be CSE trained. All tradespersons to have WAH tickets. 50% of Fitters and TAs to be BA trained. 50% of Fitters to have rigging tickets. Roster updated 19/04/2026."
                 )
               )
             )
