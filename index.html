@@ -185,63 +185,8 @@
     //   DG → dog, WP → ewp, LF → fork, RA/RI/RB → rig ("Advanced"/"Intermediate"/"Basic"),
     //   C0/C6/CN/SB/SI → recorded in extras only (no dedicated column).
     // Drivers licence: HR → hr, otherwise ignored.
-    /* Hand-curated per-person annotations: newhire flag, extras cert
-       list, driver's licence class. NOT the authoritative ticket source
-       (SQL compliance sheet via the feed is) — kept here purely for the
-       annotations the compliance sheet doesn't carry. buildFromJson()
-       name-matches into this on every render. */
-    const TICKETS_OVERLAY = {
-      // --- Night ---
-      "WANGLER, Graham":            { dog: true, drivers: "C" },
-      "TIAMSON, Melvin":            { ewp: true },
-      "GANGEMI, Jake":              { dog: true, fork: true, ewp: true, drivers: "C", newhire: true, extras: "CN" },
-      "USORE, Ngoni":               { ewp: true, drivers: "C" },
-      "MUKUNGA, Herbert":           { ewp: true, drivers: "HR" },
-      "SINGH, Gurshwinder":         { fork: true, ewp: true },
-      "ANADIF, Omar":               { fork: true, ewp: true, drivers: "C", newhire: true },
-      "RATAHI, Hemi":               { fork: true, ewp: true, rig: "Advanced", drivers: "HR", extras: "C0, C6, SB, SI" },
-      "FERNANDES, Luis":            { dog: true, rig: "Intermediate" },
-      "MONDESIR, Lea":              {},
-      "RAFFAELE, Roberto":          { fork: true, drivers: "C" },
-      "GARCIA, King":               {},
-      "DILENA, Jessica":            { ewp: true, drivers: "C-A" },
-      "SARTI, Federico":            { drivers: "HR" },
-      "REID, Issac":                {},
-      "THOMPSON, William":          { drivers: "HR" },
-      "NGUYEN, Gabriel":            {},
-      "BENDANI, Mehdi":             { drivers: "C", newhire: true },
-      "WITHERS, Beau":              {},
-      "SOSA, Lucrecia Celeste":     { dog: true, fork: true, rig: "Intermediate", ewp: true, drivers: "C", newhire: true },
-      "RISCHIA, Mirko":             { drivers: "C", newhire: true },
-      "VAN DER ZANDEN, Julian":     { dog: true, fork: true, rig: "Intermediate", drivers: "C" },
-      // --- Day ---
-      "RILEY, Adam":                { drivers: "C" },
-      "SMITH, Anthony":             { newhire: true },
-      "SILLIS, Daniel":             { dog: true, rig: "Intermediate" },
-      "MENDIVIL, Jeremias":         { fork: true, drivers: "C" },
-      "KARIKIS, Stefanos":          { dog: true, drivers: "C" },
-      "GILCHRIST, Sharon":          { fork: true, ewp: true, drivers: "HR" },
-      "NDENGA, Naomi":              {},
-      "HERNANDEZ, Jaime":           {},
-      "MONNET, Lise":               { ewp: true },
-      "LYON, Barry":                { ewp: true },
-      "JEFFERY, Jacinta":           { ewp: true },
-      "TRAORE, Eleonora":           { ewp: true },
-      "CHITTY, Russell":            { dog: true, rig: "Advanced" },
-      "DACK, Joe":                  { dog: true, rig: "Intermediate" },
-      "BURNS, Peter":               {},
-      "GRAINGER-ROUSSEAU, Malcolm": { fork: true },
-      "GARDINER, Edward":           {},
-      "THANGARASU, Prabhakaran":    { drivers: "C", newhire: true },
-      "MOHAMED, Abdikadir":         { drivers: "C", newhire: true },
-      "DOBBELAERE, Mitya":          { drivers: "C" },
-      "DORUGADE, Omkar Uttam":      {},
-      "FORREST, Wayne":             { ewp: true },
-      "ABHINAV, Abhinav":           { drivers: "HR" },
-      "HANCOCK, John":              { ewp: true },
-      "JAMES, Darren":              {},
-      "MENDY, Mathias":             { dog: true, fork: true, rig: "Basic", ewp: true, drivers: "C", extras: "SI" }
-    };
+    /* newhire / extras / drivers now arrive pre-merged on each roster
+       entry via data/enrichment/tronox.json in the feed. No inline copy. */
 
     let E = [];      // populated by buildFromJson() — merges CREW layout + TICKETS notes + fetched roster + SQL tickets
 
@@ -1377,82 +1322,31 @@
     }
 
     /* -------------------------------------------------------------------
-       Data feed integration — fetches the live roster + SQL-sourced
-       ticket compliance from southwest-shutdowns, then merges with the
-       inline CREW layout (shift assignments) and TICKETS_OVERLAY
-       (hand-curated newhire / extras annotations).
-
-       Field-by-field priority on each final E[] record:
-         - name / role / shift       : live feed if person is on shift;
-                                        else CREW-only row drops out
-         - ticket booleans           : SQL compliance wins
-         - newhire / extras / drivers: TICKETS_OVERLAY wins
-         - sum (prose)               : rebuilt from the above
+       Data feed integration — fetches the live roster from southwest-
+       shutdowns on load. The consolidated feed is the single source of
+       truth for everything:
+         - role / shift / days      : from the scheduler (Rapid Crews)
+         - ticket booleans          : from the SQL compliance sheet
+         - newhire / extras /
+           drivers                  : from data/enrichment/tronox.json
+                                       merged in by parse_rapidcrews.py
+       The inline CREW array below remains only as a planned shift-split
+       hint for distributing TBC rows (some roles plan e.g. 4 Day + 4 Night
+       unfilled slots; preserve that shape rather than dumping all TBC
+       to Day).
        ------------------------------------------------------------------- */
 
     const DATA_URL = "https://raw.githubusercontent.com/N01dea5/southwest-shutdowns/main/data/tronox.json";
 
-    function __normName(s) {
-      return (s || "").toLowerCase().replace(/[^a-z]+/g, "");
-    }
-    // Produce all plausible order-agnostic keys from a name. The feed
-    // serves "Firstname SURNAME" but the TICKETS_OVERLAY entries are keyed
-    // "SURNAME, Firstname" — we fingerprint each as the sorted-parts
-    // concatenation so both orderings collide on the same key.
-    function __nameKeys(s) {
-      const parts = (s || "").replace(/,/g, " ").trim().split(/\s+/)
-                    .map(__normName).filter(Boolean);
-      if (!parts.length) return [];
-      const keys = new Set();
-      keys.add(parts.join(""));
-      // Order-independent (sorted) key captures "Joe DACK" vs "DACK, Joe".
-      keys.add([...parts].sort().join(""));
-      if (parts.length > 1) {
-        // Just first + last handles middle names (e.g. "Lucrecia Celeste SOSA").
-        const first = parts[0];
-        const last  = parts[parts.length - 1];
-        keys.add(first + last);
-        keys.add(last + first);
-        keys.add([first, last].sort().join(""));
-      }
-      return [...keys];
-    }
-
-    // Build a lookup over TICKETS_OVERLAY indexed by every plausible key.
-    const __overlayIndex = {};
-    for (const k of Object.keys(TICKETS_OVERLAY || {})) {
-      const v = TICKETS_OVERLAY[k];
-      for (const kk of __nameKeys(k)) {
-        if (!__overlayIndex[kk]) __overlayIndex[kk] = v;
-      }
-    }
-    function lookupOverlay(name) {
-      for (const kk of __nameKeys(name)) {
-        if (__overlayIndex[kk]) return __overlayIndex[kk];
-      }
-      return {};
-    }
-
-    // Build a lookup over the inline CREW for shift assignments — the
-    // feed now carries shift per worker, but CREW's TBC rows still give
-    // us shift-correct placeholders when the SQL roster hasn't filled them.
-    const __crewIndex = {};
-    for (let i = 0; i < CREW.length; i++) {
-      const [name, role, shift] = CREW[i];
-      if (name === "TBC") continue;
-      for (const kk of __nameKeys(name)) {
-        if (!__crewIndex[kk]) __crewIndex[kk] = { role, shift };
-      }
-    }
-    function lookupCrew(name) {
-      for (const kk of __nameKeys(name)) {
-        if (__crewIndex[kk]) return __crewIndex[kk];
-      }
-      return null;
-    }
+    // Pin this dashboard to the May 2026 Major shutdown so historical or
+    // future Tronox jobs in the feed don't hijack it.
+    const SHUTDOWN_ID = "tronox-2026-05";
 
     function buildFromJson(data) {
-      const sd = (data.shutdowns || [])[0];
+      const shutdowns = data.shutdowns || [];
+      let sd = shutdowns.find(s => s.id === SHUTDOWN_ID)
+            || shutdowns.find(s => s.status === "in_progress")
+            || shutdowns[0];
       if (!sd) throw new Error("No shutdowns in data feed");
       const required  = sd.required_by_role || {};
       const rosterRaw = sd.roster || [];
@@ -1470,21 +1364,18 @@
 
       const ticketKeys = ["cse","wah","ewp","ba","fork","hr","dog","gta","fa"];
       const merged = [];
-      let overlayHits = 0;
 
       for (const r of rosterRaw) {
-        const t = r.tickets || {};
-        const overlay = lookupOverlay(r.name);
-        const crewHint = lookupCrew(r.name);
-        const shift = r.shift || (crewHint && crewHint.shift) || "Day";
-        if (overlay && Object.keys(overlay).length > 0) overlayHits++;
+        const t      = r.tickets || {};
+        const shift  = r.shift || "Day";
         const tCount = ticketKeys.filter(k => !!t[k]).length + (t.rig ? 1 : 0);
         const hasExp = ticketKeys.some(k => t[k] && t[k].status === "expiring_soon")
                     || (t.rig && t.rig.status === "expiring_soon");
-        const hasAnyTicket = tCount > 0 || overlay.drivers === "HR";
+        // newhire / extras / drivers arrive pre-merged from the enrichment feed.
+        const hasAnyTicket = tCount > 0 || r.drivers === "HR";
         const bits = [];
-        if (overlay.newhire) bits.push("new hire (first SRG mobilisation)");
-        if (overlay.extras)  bits.push("also holds " + overlay.extras);
+        if (r.newhire) bits.push("new hire (first SRG mobilisation)");
+        if (r.extras)  bits.push("also holds " + r.extras);
         const detail = bits.length ? " " + bits.join(" · ") + "." : "";
         const base = hasAnyTicket
           ? `${shift} shift ${(r.role || "position").toLowerCase()} — ${tCount} current ticket${tCount === 1 ? "" : "s"} in Rapid Crews compliance.${hasExp ? " Ticket(s) expiring within 30 days — review before mobilisation." : ""}`
@@ -1508,56 +1399,55 @@
           gta:  !!t.gta,
           fa:   !!t.fa,
           tele: !!t.fork,
-          newhire: !!overlay.newhire,
-          drivers: overlay.drivers || "",
-          extras:  overlay.extras  || "",
-          mobile: r.mobile || "",
+          newhire: !!r.newhire,
+          drivers: r.drivers || "",
+          extras:  r.extras  || "",
+          mobile:  r.mobile  || "",
           personnel_id: r.personnel_id || null,
           _tickets: t,
           _ticketCount: tCount,
-          _overlay: overlay,
+          _enriched:    !!(r.newhire || r.extras || r.drivers),
           _expiringSoon: hasExp,
           sum: base + detail,
         });
       }
 
-      // TBC padding to hit required_by_role. Preserve shift split from the
-      // inline CREW's TBC allocations where possible (Tronox CREW already
-      // splits day/night, e.g. 4 TBC Day Boilermakers + 4 TBC Night).
+      // ---- TBC + "Confirmed (name pending)" padding -------------------
+      // Three buckets for each role:
+      //   named in roster  -> existing merged entries above
+      //   filled - named   -> "Confirmed (name pending)": SQL says it's
+      //                        filled but the RosterCut export doesn't
+      //                        carry a name yet (scheduler lag). Shown so
+      //                        the per-site count matches the consolidated
+      //                        dashboard's source-of-truth filled figures.
+      //   required - filled-> TBC: positions genuinely unfilled.
+      const filled_by_role = sd.filled_by_role || {};
       const crewTbcByRoleShift = {};
       for (const [name, role, shift] of CREW) {
         if (name !== "TBC") continue;
         const k = role + "|" + shift;
         crewTbcByRoleShift[k] = (crewTbcByRoleShift[k] || 0) + 1;
       }
-      const feedRoleShift = {};
-      for (const r of rosterRaw) {
-        const k = r.role + "|" + (r.shift || "Day");
-        feedRoleShift[k] = (feedRoleShift[k] || 0) + 1;
-      }
-      for (const role of Object.keys(required)) {
-        const req = required[role] || 0;
-        const have = rosterRaw.filter(x => x.role === role).length;
-        const gap = req - have;
-        if (gap <= 0) continue;
-        // Distribute TBC according to the CREW planned split if we can,
-        // otherwise fall back to all-Day.
+      function distribute(role, n, kind) {
+        // Day/night split: honour inline CREW planning when available, else
+        // biased toward Day.
         const planDay   = crewTbcByRoleShift[role + "|Day"]   || 0;
         const planNight = crewTbcByRoleShift[role + "|Night"] || 0;
         const planTotal = planDay + planNight;
-        let addDay   = 0;
-        let addNight = 0;
+        let addDay = 0, addNight = 0;
         if (planTotal > 0) {
-          addDay   = Math.round(gap * (planDay   / planTotal));
-          addNight = gap - addDay;
+          addDay   = Math.round(n * (planDay / planTotal));
+          addNight = n - addDay;
         } else {
-          addDay = gap;
+          addDay = n;
         }
         for (let i = 0; i < addDay + addNight; i++) {
           const shift = i < addDay ? "Day" : "Night";
+          const isPending = kind === "pending";
           merged.push({
             id: merged.length + 1,
-            name: "TBC", role, shift,
+            name: isPending ? "Confirmed (name pending)" : "TBC",
+            role, shift,
             days: DATES.length || 5,
             group: role,
             ty: 0, sy: 0,
@@ -1566,9 +1456,22 @@
             newhire:false, drivers:"", extras:"",
             mobile: "", personnel_id: null,
             _tickets: {}, _ticketCount: 0, _overlay: {}, _expiringSoon: false,
-            sum: `Unfilled ${role} — ${shift} shift. Source personnel and confirm ticket compliance before mobilisation.`,
+            _pending: isPending,
+            sum: isPending
+              ? `${role} confirmed by Rapid Crews planner; name not yet in RosterCut export. Awaiting scheduler update.`
+              : `Unfilled ${role} — ${shift} shift. Source personnel and confirm ticket compliance before mobilisation.`,
           });
         }
+      }
+      const rolesToPad = new Set(Object.keys(required).concat(Object.keys(filled_by_role)));
+      for (const role of rolesToPad) {
+        const req    = required[role] || 0;
+        const filled = filled_by_role[role] || 0;
+        const named  = rosterRaw.filter(x => x.role === role).length;
+        const pending = Math.max(0, filled - named);
+        const tbc     = Math.max(0, req - Math.max(filled, named));
+        if (pending > 0) distribute(role, pending, "pending");
+        if (tbc     > 0) distribute(role, tbc,     "tbc");
       }
 
       // Sort: by role order from GROUP_ORDER, then Day first, then named first, alpha.
@@ -1595,20 +1498,22 @@
                  : new Array(DATES.length).fill("DS")),
       }));
 
+      const em = sd._source && sd._source.enrichment_match;
       window.__TRONOX_META__ = {
         name: sd.name, site: sd.site,
         start_date: sd.start_date, end_date: sd.end_date,
         generated_at: data.generated_at || null,
-        overlay_hits: overlayHits,
-        overlay_total: Object.keys(TICKETS_OVERLAY || {}).length,
+        enrichment_match: em || null,
       };
 
       if (console && console.info) {
-        console.info("[tronox] roster=%d (named=%d tbc=%d), overlay hits=%d/%d, tickets=%d, expiring soon=%d",
-          E.length,
-          E.filter(e => e.name !== "TBC").length,
+        const enriched = E.filter(e => e._enriched).length;
+        const named    = E.filter(e => e.name !== "TBC" && !e._pending).length;
+        console.info("[tronox] roster=%d (named=%d pending=%d tbc=%d), enriched=%d/%d, tickets=%d, expiring soon=%d",
+          E.length, named,
+          E.filter(e => e._pending).length,
           E.filter(e => e.name === "TBC").length,
-          overlayHits, Object.keys(TICKETS_OVERLAY || {}).length,
+          enriched, named,
           E.reduce((s, e) => s + (e._ticketCount || 0), 0),
           E.filter(e => e._expiringSoon).length);
       }
